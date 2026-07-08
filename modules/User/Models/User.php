@@ -1,0 +1,68 @@
+<?php
+
+namespace Modules\User\Models;
+
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Fortify\TwoFactorAuthenticatable;
+use Illuminate\Support\Facades\Storage;
+use App\Concerns\HasUuid;
+use Modules\User\Enums\UserRoles;
+use Modules\User\Enums\UserStatuses;
+
+class User extends Authenticatable
+{
+    /** @use HasFactory<UserFactory> */
+    use HasFactory, Notifiable, TwoFactorAuthenticatable;
+    use HasUuid;
+    
+    protected $guarded = [];
+
+    protected $hidden = [
+        'password',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'remember_token',
+    ];
+
+    protected $appends = [
+        'role_label',
+        'status_label',
+        'image_url',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+            'two_factor_confirmed_at' => 'datetime',
+            'role' => UserRoles::class,
+            'status' => UserStatuses::class
+        ];
+    }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        if ($this->image && Storage::disk('public')->exists('users/' . $this->image)) {
+            return asset('storage/users/' . $this->image);
+        }
+        
+        return asset('assets/images/default-image.png');
+    }
+
+    public function getRoleLabelAttribute(): string
+    {
+        return $this->role->label();
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return $this->status->label();
+    }
+}
