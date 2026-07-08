@@ -4,7 +4,6 @@ namespace Modules\Guest\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Database\Seeders\DatabaseSeeder;
-use Modules\Guest\Providers\RouteServiceProvider;
 
 class GuestServiceProvider extends ServiceProvider
 {
