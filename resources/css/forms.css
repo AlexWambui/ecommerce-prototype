@@ -1,15 +1,19 @@
 .form {
     @apply p-6 mt-4 rounded-xl border border-border lg:w-[80vw] lg:mx-auto;
 
-    .header {
-        @apply flex gap-2 mb-4 py-4 border-b border-border;
+    .form_header {
+        @apply mb-4 py-4 border-b border-border flex items-center gap-2;
 
         a {
-            @apply text-lg cursor-pointer font-medium;
+            @apply cursor-pointer font-bold;
+
+            svg {
+                @apply w-5 h-5;
+            }
         }
 
         h2 {
-            @apply text-lg font-semibold;
+            @apply font-medium;
         }
     }
 

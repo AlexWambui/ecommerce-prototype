@@ -1,1 +1,23 @@
 @import './forms';
+@import './tables';
+
+.AppLayout {
+    .header {
+        @apply grid lg:grid-cols-3 gap-8;
+
+        .search {
+            @apply lg:flex lg:justify-center;
+            input {
+                @apply border border-border py-1 px-4 rounded-sm;
+            }
+        }
+
+        .action {
+            @apply lg:justify-self-end;
+
+            a {
+                @apply bg-foreground text-background py-1 px-4 rounded-sm font-medium;
+            }
+        }
+    }
+}

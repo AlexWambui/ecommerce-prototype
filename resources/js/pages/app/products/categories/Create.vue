@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import FormHeader from '@/components/custom/FormHeader.vue';
 import productCategoryRoutes from '@/routes/product-categories';
 
 defineOptions({
@@ -43,12 +44,7 @@ const removeCategoryImage = () => {
     <Head title="Create Product Category" />
 
     <div class="form">
-        <div class="header">
-            <Link :href="productCategoryRoutes.index().url">
-                &larr;
-            </Link>
-            <h2 class="title">Create New Category</h2>
-        </div>
+        <FormHeader :backUrl="productCategoryRoutes.index().url" title="Create Product Category" />
 
         <Form :action="productCategoryRoutes.store.url()" method="post" v-slot="{ errors, processing }">
             <div class="inputs-group-wrapper">
@@ -112,9 +108,7 @@ const removeCategoryImage = () => {
 
                 <div>
                     <Link :href="productCategoryRoutes.index().url">
-                        <Button type="button" variant="outline">
-                            Cancel and return to categories
-                        </Button>
+                        <Button type="button" variant="outline">Cancel</Button>
                     </Link>
                 </div>
             </div>
