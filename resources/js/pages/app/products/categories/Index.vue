@@ -52,7 +52,9 @@ watch([search], () => {
         </div>
 
         <div class="action">
-            <Link :href="productCategoryRoutes.create().url">New</Link>
+            <Link :href="productCategoryRoutes.create().url">
+                <Button>New Category</Button>
+            </Link>
         </div>
     </div>
 

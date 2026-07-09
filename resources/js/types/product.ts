@@ -7,6 +7,7 @@ export interface Product {
     id: number;
     name: string;
     slug: string;
+    category_name: string;
     description: string;
     price: number;
     compare_price: number | null;
@@ -14,6 +15,7 @@ export interface Product {
     sku: string;
     category: string;
     tags: string[];
+    thumbnail_url: string;
     images: ProductImage[];
     rating: number;
     reviews_count: number;

@@ -69,6 +69,10 @@ form,
         }
     }
 
+    input[type="checkbox"] {
+        @apply w-auto;
+    }
+
     .inputs-group {
         @apply mb-4;
     }

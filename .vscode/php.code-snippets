@@ -1,0 +1,20 @@
+{
+	"Import Auth Facade": {
+		"prefix": "imp-Auth",
+		"body": [
+			"use Illuminate\\Support\\Facades\\Auth;"
+		]
+	},
+	"Import Storage Facade": {
+		"prefix": "imp-storage",
+		"body": [
+			"use Illuminate\\Support\\Facades\\Storage;",
+		]
+	},
+	"Import Str Facade": {
+		"prefix": "imp-str",
+		"body": [
+			"use Illuminate\\Support\\Str;",
+		]
+	},
+}

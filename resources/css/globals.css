@@ -14,10 +14,6 @@
 
         .action {
             @apply lg:justify-self-end;
-
-            a {
-                @apply bg-foreground text-background py-1 px-4 rounded-sm font-medium;
-            }
         }
     }
 }

@@ -9,6 +9,8 @@ class ProductImage extends Model
 {
     protected $guarded = [];
 
+    protected $appends = ['image_url', 'thumbnail_url'];
+
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'product_id');

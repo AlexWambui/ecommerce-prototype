@@ -31,6 +31,10 @@
                 @apply rounded-full px-2 py-1 text-xs font-semibold;
             }
 
+            img {
+                @apply w-10 h-10 rounded-lg object-cover;
+            }
+
             .actions {
                 @apply text-center;
 
