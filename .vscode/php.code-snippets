@@ -11,6 +11,12 @@
 			"use Illuminate\\Support\\Facades\\Storage;",
 		]
 	},
+	"Import DB Facade": {
+		"prefix": "imp-db",
+		"body": [
+			"use Illuminate\\Support\\Facades\\DB;"
+		]
+	},
 	"Import Str Facade": {
 		"prefix": "imp-str",
 		"body": [
