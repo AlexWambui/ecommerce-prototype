@@ -20,7 +20,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             HandleAppearance::class,
             HandleInertiaRequests::class,
-            AddLinkHeadersForPreloadedAssets::class,
+            AddLinkHeadersForPreloadedAssets::class
+        ]);
+
+        $middleware->alias([
+            'role' => \App\Http\Middleware\RoleMiddleware::class
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

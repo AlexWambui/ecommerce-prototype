@@ -5,6 +5,7 @@ use App\Providers\FortifyServiceProvider;
 use Modules\User\Providers\UserServiceProvider;
 use Modules\Guest\Providers\GuestServiceProvider;
 use Modules\Product\Providers\ProductServiceProvider;
+use Modules\Delivery\Providers\DeliveryServiceProvider;
 
 return [
     AppServiceProvider::class,
@@ -13,4 +14,5 @@ return [
     UserServiceProvider::class,
     GuestServiceProvider::class,
     ProductServiceProvider::class,
+    DeliveryServiceProvider::class,
 ];
