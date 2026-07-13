@@ -57,7 +57,7 @@ const hasActiveFilters = computed(() =>
 <template>
     <Head title="Delivery Locations" />
 
-    <div class="header mt-4">
+    <div class="header">
         <div class="info">
             <h1 class="title">Locations</h1>
         </div>
@@ -95,19 +95,19 @@ const hasActiveFilters = computed(() =>
                     <TableCell>{{ location.delivery_areas_count ?? '-' }}</TableCell>
                     <TableCell class="actions">
                         <div class="actions-wrapper">
-                            <Link :href="deliveryLocationRoutes.show(location.uuid).url">
+                            <Link :href="deliveryLocationRoutes.show(location.uuid).url" title="Add Areas">
                                 <Eye class="icon show" />
                             </Link>
 
                             <span class="divider">|</span>
 
-                            <Link :href="deliveryLocationRoutes.edit(location.uuid).url" class="action edit">
+                            <Link :href="deliveryLocationRoutes.edit(location.uuid).url" title="Edit this location" class="action edit">
                                 <Pencil class="icon edit" />
                             </Link>
 
                             <span class="divider">|</span>
 
-                            <DeleteConfirmationDialog :url="deliveryLocationRoutes.destroy(location.uuid).url" title="Delete Location?" description="This location will be deleted permanently!" confirm-text="Delete Location">
+                            <DeleteConfirmationDialog :url="deliveryLocationRoutes.destroy(location.uuid).url" title="Delete Location?" description="This location and it's associated areas will be deleted permanently!" confirm-text="Delete Location">
                                 <template #trigger>
                                     <button class="action delete">
                                         <Trash2 class="icon delete" />

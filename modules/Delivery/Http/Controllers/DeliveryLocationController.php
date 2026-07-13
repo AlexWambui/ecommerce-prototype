@@ -9,6 +9,7 @@ use Inertia\Inertia;
 use Exception;
 use Modules\Delivery\Models\DeliveryLocation;
 use Modules\Delivery\Http\Resources\DeliveryLocationResource;
+use Modules\Delivery\Http\Resources\DeliveryAreaResource;
 use Modules\Delivery\Http\Requests\DeliveryLocationRequest;
 
 class DeliveryLocationController extends Controller
@@ -62,6 +63,82 @@ class DeliveryLocationController extends Controller
             Inertia::flash('toast', [
                 'type' => "error",
                 'message' => "Failed to create location: {$e->getMessage()}"
+            ]);
+
+            return back()->withInput();
+        }
+    }
+
+    public function show(Request $request, DeliveryLocation $delivery_location)
+    {
+        $query = $delivery_location->deliveryAreas();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            });
+        }
+
+        $delivery_areas = $query->orderBy('name')->paginate(30);
+
+        return inertia('app/deliveries/locations/Show', [
+            'delivery_location' => $delivery_location,
+            'delivery_areas' => DeliveryAreaResource::collection($delivery_areas)
+        ]);
+    }
+
+    public function edit(DeliveryLocation $delivery_location)
+    {
+        return inertia('app/deliveries/locations/Edit', [
+            'delivery_location' => $delivery_location
+        ]);
+    }
+
+    public function update(DeliveryLocationRequest $request, DeliveryLocation $delivery_location)
+    {
+        try {
+            DB::beginTransaction();
+
+            $delivery_location->update([
+                'name' => $request->name,
+            ]);
+
+            DB::commit();
+
+            Inertia::flash('toast', [
+                'type' => "success",
+                'message' => "Location updated successfully"
+            ]);
+
+            return to_route('delivery-locations.index');
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            Inertia::flash('toast', [
+                'type' => "error",
+                'message' => "Failed to update location: {$e->getMessage()}"
+            ]);
+
+            return back()->withInput();
+        }
+    }
+
+    public function destroy(DeliveryLocation $delivery_location)
+    {
+        try {
+            $delivery_location->delete();
+
+            Inertia::flash('toast', [
+                'type' => "success",
+                'message' => "Location deleted successfully"
+            ]);
+
+            return to_route('delivery-locations.index');
+        } catch (Exception $e) {
+            Inertia::flash('toast', [
+                'type' => "error",
+                'message' => "Failed to delete location: {$e->getMessage()}"
             ]);
 
             return back()->withInput();

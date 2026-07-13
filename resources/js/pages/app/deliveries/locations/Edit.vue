@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import InputError from '@/components/InputError.vue';
 import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
-import DeliveryLocationsRoutes from '@/routes/delivery-locations';
+import deliveryLocationRoutes from '@/routes/delivery-locations';
+import FormHeader from '@/components/custom/FormHeader.vue';
 
 interface DeliveryLocation {
     id: number;
@@ -22,7 +23,7 @@ const form = useForm({
 })
 
 const submitForm = () => {
-    form.put(DeliveryLocationsRoutes.update.url(props.delivery_location.uuid), {
+    form.put(deliveryLocationRoutes.update.url(props.delivery_location.uuid), {
         preserveScroll: true
     });
 };
@@ -32,12 +33,7 @@ const submitForm = () => {
     <Head title="Edit Location" />
 
     <div class="form">
-        <div class="header">
-            <Link :href="DeliveryLocationsRoutes.index().url">
-                &larr;
-            </Link>
-            <h2 class="title">Edit Location</h2>
-        </div>
+        <FormHeader :backUrl="deliveryLocationRoutes.index().url" title="Edit Location" />
 
         <form @submit.prevent="submitForm">
             <div class="inputs-group-wrapper">
@@ -55,7 +51,7 @@ const submitForm = () => {
                 </Button>
 
                 <div>
-                    <Link :href="DeliveryLocationsRoutes.index().url">
+                    <Link :href="deliveryLocationRoutes.index().url">
                         <Button type="button" variant="outline">
                             Cancel
                         </Button>

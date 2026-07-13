@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import InputError from '@/components/InputError.vue';
 import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
-import DeliveryAreaRoutes from '@/routes/delivery-areas';
-import DeliveryLocationRoutes from '@/routes/delivery-locations';
+import FormHeader from '@/components/custom/FormHeader.vue';
+import deliveryAreaRoutes from '@/routes/delivery-areas';
+import deliveryLocationRoutes from '@/routes/delivery-locations';
 
 interface DeliveryLocation {
     id: number;
@@ -21,13 +22,13 @@ const props = defineProps<{
 const form = useForm({
     name: '',
     estimated_days: '',
-    shipping_cost: '',
+    price: '',
     is_active: true,
     delivery_location_id: props.delivery_location.id
 })
 
 const submitForm = () => {
-    form.post(DeliveryAreaRoutes.store.url(props.delivery_location.uuid), {
+    form.post(deliveryAreaRoutes.store.url(props.delivery_location.uuid), {
         preserveScroll: true
     });
 };
@@ -37,12 +38,7 @@ const submitForm = () => {
     <Head title="Create Delivery Area" />
 
     <div class="form">
-        <div class="header">
-            <Link :href="DeliveryLocationRoutes.show(delivery_location.uuid).url">
-                &larr;
-            </Link>
-            <h2 class="title">Create New Delivery Area</h2>
-        </div>
+        <FormHeader :backUrl="deliveryLocationRoutes.show(delivery_location.uuid).url" title="Create Area" />
 
         <form @submit.prevent="submitForm">
             <input type="hidden" v-model="form.delivery_location_id">
@@ -65,9 +61,9 @@ const submitForm = () => {
 
             <div class="inputs-group-wrapper">
                 <div class="inputs-group">
-                    <Label for="shipping_cost" class="required">Shipping Cost</Label>
-                    <Input type="number" id="shipping_cost" v-model="form.shipping_cost" autocomplete="shipping_cost" placeholder="1000" />
-                    <InputError :message="form.errors.shipping_cost" />
+                    <Label for="price" class="required">Shipping Cost</Label>
+                    <Input type="number" id="price" v-model="form.price" autocomplete="price" placeholder="1000" />
+                    <InputError :message="form.errors.price" />
                 </div>
             </div>
 
@@ -92,7 +88,7 @@ const submitForm = () => {
                 </Button>
 
                 <div>
-                    <Link :href="DeliveryLocationRoutes.show(delivery_location.uuid).url">
+                    <Link :href="deliveryLocationRoutes.show(delivery_location.uuid).url">
                         <Button type="button" variant="outline">
                             Cancel
                         </Button>

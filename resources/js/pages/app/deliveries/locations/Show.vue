@@ -34,7 +34,7 @@ interface DeliveryArea {
     id: number;
     uuid: string;
     name: string;
-    shipping_cost: number;
+    price: number;
     estimated_days: number;
     is_active: boolean;
 };
@@ -80,79 +80,79 @@ const hasActiveFilters = computed(() =>
 <template>
     <Head title="Delivery Areas" />
 
-    <div class="app-container">
-        <div class="header">
-            <div class="info">
-                <h1 class="title">Delivery Areas - {{ delivery_location.name }}</h1>
-            </div>
+    <div class="header">
+        <div class="info">
+            <h1 class="title">Delivery Areas - {{ delivery_location.name }}</h1>
+        </div>
 
-            <div class="search">
-                <Input
-                    v-model="search"
-                    type="text"
-                    placeholder="Search by name or slug"
-                />
-            </div>
+        <div class="search">
+            <Input
+                v-model="search"
+                type="text"
+                placeholder="Search by name or slug"
+            />
+        </div>
 
+        <div class="action">
             <Link :href="DeliveryAreaRoutes.create(delivery_location.uuid).url">
                 <Button>New Area</Button>
             </Link>
         </div>
-
-        <div class="table-wrapper">
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead class="id">#</TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Shipping Cost</TableHead>
-                        <TableHead>Estimated Days</TableHead>
-                        <TableHead class="actions">Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-
-                <TableBody>
-                    <TableRow v-for="(area, index) in delivery_areas.data" :key="area.id">
-                        <TableCell class="id">{{ (delivery_areas.meta.current_page - 1) * delivery_areas.meta.per_page + index + 1 }}</TableCell>
-                        <TableCell :class="{'text-red-600' : !area.is_active}">{{ area.name }}</TableCell>
-                        <TableCell>{{ formatPrice(area.shipping_cost) }}</TableCell>
-                        <TableCell>{{ area.estimated_days }}</TableCell>
-                        <TableCell class="actions">
-                            <div class="actions-wrapper">
-                                <Link :href="DeliveryAreaRoutes.edit({delivery_location: delivery_location.uuid, delivery_area: area.uuid}).url" class="action edit">
-                                    <Pencil class="icon edit" />
-                                </Link>
-
-                                <span class="divider">|</span>
-
-                                <DeleteConfirmationDialog :url="DeliveryAreaRoutes.destroy(area.uuid).url" title="Delete Area?" description="This area will be deleted permanently!" confirm-text="Delete Area">
-                                    <template #trigger>
-                                        <button class="action delete">
-                                            <Trash2 class="icon delete" />
-                                        </button>
-                                    </template>
-                                </DeleteConfirmationDialog>
-                            </div>
-                        </TableCell>
-                    </TableRow>
-
-                    <TableRow v-if="delivery_areas.data.length === 0">
-                        <TableCell colspan="5" class="blank-table-row">
-                            No areas found!
-                        </TableCell>
-                    </TableRow>
-                </TableBody>
-            </Table>
-        </div>
-
-        <Pagination :meta="delivery_areas.meta" />
-
-        <TableResultsSummary
-            :meta="delivery_areas.meta"
-            item-name="delivery area"
-            item-name-plural="delivery areas"
-            :show-filter-indicators="true"
-            :has-active-filters="hasActiveFilters"
-        />
     </div>
+
+    <div class="table-wrapper">
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    <TableHead class="id">#</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Shipping Cost</TableHead>
+                    <TableHead>Estimated Days</TableHead>
+                    <TableHead class="actions">Actions</TableHead>
+                </TableRow>
+            </TableHeader>
+
+            <TableBody>
+                <TableRow v-for="(area, index) in delivery_areas.data" :key="area.id">
+                    <TableCell class="id">{{ (delivery_areas.meta.current_page - 1) * delivery_areas.meta.per_page + index + 1 }}</TableCell>
+                    <TableCell :class="{'text-red-600' : !area.is_active}">{{ area.name }}</TableCell>
+                    <TableCell>{{ formatPrice(area.price) }}</TableCell>
+                    <TableCell>{{ area.estimated_days }}</TableCell>
+                    <TableCell class="actions">
+                        <div class="actions-wrapper">
+                            <Link :href="DeliveryAreaRoutes.edit({delivery_location: delivery_location.uuid, delivery_area: area.uuid}).url" class="action edit">
+                                <Pencil class="icon edit" />
+                            </Link>
+
+                            <span class="divider">|</span>
+
+                            <DeleteConfirmationDialog :url="DeliveryAreaRoutes.destroy(area.uuid).url" title="Delete Area?" description="This area will be deleted permanently!" confirm-text="Delete Area">
+                                <template #trigger>
+                                    <button class="action delete">
+                                        <Trash2 class="icon delete" />
+                                    </button>
+                                </template>
+                            </DeleteConfirmationDialog>
+                        </div>
+                    </TableCell>
+                </TableRow>
+
+                <TableRow v-if="delivery_areas.data.length === 0">
+                    <TableCell colspan="5" class="blank-table-row">
+                        No areas found!
+                    </TableCell>
+                </TableRow>
+            </TableBody>
+        </Table>
+    </div>
+
+    <Pagination :meta="delivery_areas.meta" />
+
+    <TableResultsSummary
+        :meta="delivery_areas.meta"
+        item-name="delivery area"
+        item-name-plural="delivery areas"
+        :show-filter-indicators="true"
+        :has-active-filters="hasActiveFilters"
+    />
 </template>
