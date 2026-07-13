@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Menu, Search, Barcode, Users } from '@lucide/vue';
+import { BookOpen, LayoutGrid, Menu, Barcode, Users, Truck } from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
@@ -39,6 +39,7 @@ import type { BreadcrumbItem, NavItem } from '@/types';
 import { dashboard } from '@/routes';
 
 import productRoutes from '@/routes/products';
+import deliveryLocationRoutes from '@/routes/delivery-locations';
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
@@ -81,6 +82,11 @@ const mainNavItems = computed(() => {
                 href: productRoutes.index(),
                 icon: Barcode,
             },
+            {
+                title: 'Deliveries',
+                href: deliveryLocationRoutes.index(),
+                icon: Truck,
+            },
         );
     }
 
@@ -90,6 +96,11 @@ const mainNavItems = computed(() => {
                 title: 'Products',
                 href: productRoutes.index(),
                 icon: Barcode,
+            },
+            {
+                title: 'Deliveries',
+                href: deliveryLocationRoutes.index(),
+                icon: Truck,
             },
         );
     }

@@ -47,13 +47,36 @@ class User extends Authenticatable
         ];
     }
 
-    public function getImageUrlAttribute(): ?string
+    public function hasRole(string $role_name): bool
     {
-        if ($this->image && Storage::disk('public')->exists('users/' . $this->image)) {
-            return asset('storage/users/' . $this->image);
+        // Convert string role name to enum value
+        foreach (UserRoles::cases() as $role) {
+            if (strtolower($role->name) === strtolower($role_name)) {
+                return $this->role->value === $role->value;
+            }
         }
-        
-        return asset('assets/images/default-image.png');
+        return false;
+    }
+
+    public function hasAnyRole(array $role_names): bool
+    {
+        foreach ($role_names as $role_name) {
+            if ($this->hasRole($role_name)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status === UserStatuses::ACTIVE;
+    }
+
+    public function getIsActiveAttribute(): bool
+    {
+        return $this->isActive();
     }
 
     public function getRoleLabelAttribute(): string
@@ -64,5 +87,14 @@ class User extends Authenticatable
     public function getStatusLabelAttribute(): string
     {
         return $this->status->label();
+    }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        if ($this->image && Storage::disk('public')->exists('users/' . $this->image)) {
+            return asset('storage/users/' . $this->image);
+        }
+        
+        return asset('assets/images/default-image.png');
     }
 }
