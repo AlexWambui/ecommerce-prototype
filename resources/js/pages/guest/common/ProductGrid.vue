@@ -45,7 +45,7 @@ const emit = defineEmits<{
 
 <template>
     <section class="py-12">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="container-fluid mx-auto px-4 lg:px-16">
             <!-- Header -->
             <div v-if="title" class="flex justify-between items-center mb-8">
                 <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">

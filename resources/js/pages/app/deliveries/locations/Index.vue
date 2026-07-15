@@ -57,7 +57,7 @@ const hasActiveFilters = computed(() =>
 <template>
     <Head title="Delivery Locations" />
 
-    <div class="header">
+    <div class="app-header">
         <div class="info">
             <h1 class="title">Locations</h1>
         </div>

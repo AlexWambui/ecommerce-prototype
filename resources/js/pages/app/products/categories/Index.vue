@@ -44,7 +44,7 @@ watch([search], () => {
 
     <ProductsNav current-page="product-categories" />
 
-    <div class="header">
+    <div class="app-header">
         <h1>Categories</h1>
 
         <div class="search">

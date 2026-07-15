@@ -23,4 +23,10 @@
 			"use Illuminate\\Support\\Str;",
 		]
 	},
+	"Import Request": {
+		"prefix": "imp-req",
+		"body": [
+			"use Illuminate\\Http\\Request;"
+		]
+	}
 }

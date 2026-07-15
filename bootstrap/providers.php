@@ -6,6 +6,7 @@ use Modules\User\Providers\UserServiceProvider;
 use Modules\Guest\Providers\GuestServiceProvider;
 use Modules\Product\Providers\ProductServiceProvider;
 use Modules\Delivery\Providers\DeliveryServiceProvider;
+use Modules\CallbackMessage\Providers\CallbackMessageServiceProvider;
 
 return [
     AppServiceProvider::class,
@@ -15,4 +16,5 @@ return [
     GuestServiceProvider::class,
     ProductServiceProvider::class,
     DeliveryServiceProvider::class,
+    CallbackMessageServiceProvider::class
 ];

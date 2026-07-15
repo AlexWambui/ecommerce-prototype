@@ -18,9 +18,11 @@ const user = computed(() => page.props.auth?.user);
             </div>
 
             <div class="links flex items-center gap-8">
-                <Link href="/all-shops">Discover</Link>
+                <Link href="/dashboard" v-if="user">Dashboard</Link>
+                <Link href="/shops">Shop</Link>
                 <Link href="/deals-page">Deals & Offers</Link>
                 <Link href="/business-community">Community</Link>
+                <Link href="/contact">Contact</Link>
             </div>
 
             <div class="extras flex items-center justify-center gap-4">

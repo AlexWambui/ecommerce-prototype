@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, LayoutGrid, Menu, Barcode, Users, Truck } from '@lucide/vue';
+import { BookOpen, LayoutGrid, Menu, Barcode, Users, Truck, PhoneOutgoing } from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
@@ -40,6 +40,7 @@ import { dashboard } from '@/routes';
 
 import productRoutes from '@/routes/products';
 import deliveryLocationRoutes from '@/routes/delivery-locations';
+import callbackMessageRoutes from '@/routes/callback-messages';
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
@@ -102,6 +103,11 @@ const mainNavItems = computed(() => {
                 href: deliveryLocationRoutes.index(),
                 icon: Truck,
             },
+            {
+                title: 'Callbacks',
+                href: callbackMessageRoutes.list(),
+                icon: PhoneOutgoing,
+            },
         );
     }
 
@@ -131,7 +137,7 @@ const rightNavItems: NavItem[] = [
 <template>
     <div>
         <div class="border-b border-sidebar-border/80">
-            <div class="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
+            <div class="mx-auto flex h-16 items-center px-4 lg:px-16">
                 <!-- Mobile Menu -->
                 <div class="lg:hidden">
                     <Sheet>
@@ -199,7 +205,7 @@ const rightNavItems: NavItem[] = [
                     </Sheet>
                 </div>
 
-                <Link :href="dashboard()" class="flex items-center gap-x-2">
+                <Link href="/" class="flex items-center gap-x-2">
                     <AppLogo />
                 </Link>
 
