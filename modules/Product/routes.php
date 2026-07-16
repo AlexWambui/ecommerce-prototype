@@ -9,6 +9,8 @@ Route::get('products/create', [ProductController::class, 'create'])->name('produ
 Route::post('products', [ProductController::class, 'store'])->name('products.store');
 Route::get('products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
 Route::put('products/{product}', [ProductController::class, 'update'])->name('products.update');
+Route::post('/products/{product}/toggle-attribute', [ProductController::class, 'toggleAttribute'])
+    ->name('products.toggle-attribute');
 Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
 
 Route::get('product-categories', [ProductCategoryController::class, 'index'])->name('product-categories.index');

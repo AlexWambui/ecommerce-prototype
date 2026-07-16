@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
-import { Link, router, usePage } from '@inertiajs/vue3';
-import { Pencil, Trash2 } from '@lucide/vue';
+import { Link, router } from '@inertiajs/vue3';
+import { Pencil, Trash2, Loader2 } from '@lucide/vue';
 import Input from '@/components/ui/input/Input.vue';
 import Button from '@/components/ui/button/Button.vue';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -11,7 +11,6 @@ import Pagination from '@/components/custom/Pagination.vue';
 import ProductsNav from '../components/ProductsNav.vue';
 import type { Product } from '@/types/product';
 import productRoutes from '@/routes/products';
-
 import { usePriceFormatter } from '@/composables/usePriceFormatter';
 
 const { formatPrice } = usePriceFormatter();
@@ -37,7 +36,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const search = ref(props.filters?.search || '');
-const status_filter = ref(props.filters?.status || '');
+const toggling = ref<{ id: number; attribute: string } | null>(null);
 
 const debouncedSearch = useDebounceFn(() => {
     router.get(productRoutes.index().url, {
@@ -59,9 +58,84 @@ const getDisplayRange = computed(() => {
     return { start, end, total };
 });
 
-const hasActiveFilters = computed(() => 
-    !!(search.value || status_filter.value)
-);
+const hasActiveFilters = computed(() => !!search.value);
+
+const toggleAttribute = async (product: Product, attribute: 'is_featured' | 'is_new' | 'is_active') => {
+    const currentValue = product[attribute];
+    const newValue = !currentValue;
+    
+    toggling.value = { id: product.id, attribute };
+    
+    try {
+        const response = await fetch(productRoutes.toggleAttribute(product.id).url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            },
+            body: JSON.stringify({
+                attribute: attribute,
+                value: newValue
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update');
+        }
+
+        const data = await response.json();
+        
+        if (data.success) {
+            product[attribute] = newValue;
+        }
+    } catch (error) {
+        console.error('Error toggling attribute:', error);
+        product[attribute] = currentValue;
+    } finally {
+        toggling.value = null;
+    }
+};
+
+const getTagClasses = (type: string, value: boolean) => {
+    const baseClasses = 'px-2 py-0.5 text-xs font-medium rounded-full transition-all duration-200 cursor-pointer select-none inline-flex items-center justify-center min-w-[64px]';
+    
+    if (!value) {
+        return `${baseClasses} bg-gray-100 text-gray-400 hover:bg-gray-200`;
+    }
+    
+    switch (type) {
+        case 'is_featured':
+            return `${baseClasses} bg-yellow-400 text-yellow-900 hover:bg-yellow-500`;
+        case 'is_new':
+            return `${baseClasses} bg-green-500 text-white hover:bg-green-600`;
+        case 'is_active':
+            return `${baseClasses} bg-blue-500 text-white hover:bg-blue-600`;
+        default:
+            return baseClasses;
+    }
+};
+
+const isLoading = (product: Product, attribute: string) => {
+    return toggling.value?.id === product.id && toggling.value?.attribute === attribute;
+};
+
+const getTagLabel = (type: string, product: Product) => {
+    const attribute = type as 'is_featured' | 'is_new' | 'is_active';
+    if (isLoading(product, attribute)) {
+        return ''; // Return empty string, we'll show the spinner
+    }
+    
+    switch (type) {
+        case 'is_featured':
+            return 'Featured';
+        case 'is_new':
+            return 'New';
+        case 'is_active':
+            return 'Active';
+        default:
+            return '';
+    }
+};
 </script>
 
 <template>
@@ -98,6 +172,7 @@ const hasActiveFilters = computed(() =>
                     <TableHead>Price (Ksh)</TableHead>
                     <TableHead>Stock</TableHead>
                     <TableHead>Category</TableHead>
+                    <TableHead class="tags">Tags</TableHead>
                     <TableHead class="actions">Actions</TableHead>
                 </TableRow>
             </TableHeader>
@@ -108,9 +183,42 @@ const hasActiveFilters = computed(() =>
                     <TableCell><img :src="product.thumbnail_url" :alt="product.slug"></TableCell>
                     <TableCell>{{ product.name }}</TableCell>
                     <TableCell>{{ product.sku ?? '-' }}</TableCell>
-                    <TableCell>{{ formatPrice(product.price) }}</TableCell> <!-- TODO: Show discounts if available and price as old price -->
-                    <TableCell>xx</TableCell> <!-- TODO: Use correct stock count -->
+                    <TableCell>{{ formatPrice(product.price) }}</TableCell>
+                    <TableCell>{{ product.stock ?? 0 }}</TableCell>
                     <TableCell>{{ product.category_name }}</TableCell>
+                    <TableCell class="tags">
+                        <div class="tags-wrapper">
+                            <!-- Featured -->
+                            <button
+                                @click="toggleAttribute(product, 'is_featured')"
+                                :disabled="isLoading(product, 'is_featured')"
+                                :class="getTagClasses('is_featured', product.is_featured)"
+                            >
+                                <Loader2 v-if="isLoading(product, 'is_featured')" class="w-3 h-3 animate-spin" />
+                                <span v-else>Featured</span>
+                            </button>
+
+                            <!-- New -->
+                            <button
+                                @click="toggleAttribute(product, 'is_new')"
+                                :disabled="isLoading(product, 'is_new')"
+                                :class="getTagClasses('is_new', product.is_new)"
+                            >
+                                <Loader2 v-if="isLoading(product, 'is_new')" class="w-3 h-3 animate-spin" />
+                                <span v-else>New</span>
+                            </button>
+
+                            <!-- Active -->
+                            <button
+                                @click="toggleAttribute(product, 'is_active')"
+                                :disabled="isLoading(product, 'is_active')"
+                                :class="getTagClasses('is_active', product.is_active)"
+                            >
+                                <Loader2 v-if="isLoading(product, 'is_active')" class="w-3 h-3 animate-spin" />
+                                <span v-else>Active</span>
+                            </button>
+                        </div>
+                    </TableCell>
                     <TableCell class="actions">
                         <div class="actions-wrapper">
                             <Link :href="productRoutes.edit(product.id).url" class="action edit">
@@ -134,7 +242,7 @@ const hasActiveFilters = computed(() =>
                 </TableRow>
 
                 <TableRow v-if="products.data.length === 0">
-                    <TableCell colspan="6" class="blank-table-row">
+                    <TableCell colspan="9" class="blank-table-row">
                         No products found.
                     </TableCell>
                 </TableRow>
@@ -154,3 +262,59 @@ const hasActiveFilters = computed(() =>
         </p>
     </div>
 </template>
+
+<style scoped>
+.tags-wrapper {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.tags {
+    min-width: 180px;
+    width: 180px; /* Fixed width to prevent table from resizing */
+}
+
+.actions-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+:deep(.table) {
+    min-width: 1000px;
+}
+
+:deep(.table th),
+:deep(.table td) {
+    padding: 0.75rem 1rem;
+    vertical-align: middle;
+}
+
+:deep(.table td img) {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 0.25rem;
+}
+
+.id {
+    width: 60px;
+    text-align: center;
+}
+
+.actions {
+    width: 100px;
+    text-align: center;
+}
+
+/* Fix for the loader icon */
+:deep(.loader-icon) {
+    width: 12px;
+    height: 12px;
+}
+</style>

@@ -21,7 +21,7 @@ export interface Product {
     reviews_count: number;
     is_featured: boolean;
     is_new: boolean;
-    is_on_sale: boolean;
+    is_active: boolean;
     created_at: string;
     updated_at: string;
 }

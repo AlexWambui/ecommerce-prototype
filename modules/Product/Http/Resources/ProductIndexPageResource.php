@@ -30,6 +30,9 @@ class ProductIndexPageResource extends JsonResource
             'current_stock' => $this->current_stock,
             'track_inventory' => (bool) $this->track_inventory,
             'low_stock_threshold' => $this->low_stock_threshold,
+            'is_featured' => (bool) $this->is_featured,
+            'is_new' => (bool) $this->is_new,
+            'is_active' => (bool) $this->is_active,
         ];
     }
 }

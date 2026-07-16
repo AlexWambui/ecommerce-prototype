@@ -155,6 +155,35 @@ class ProductController extends Controller
             return back()->withErrors(['error' => $e->getMessage()]);
         }
     }
+
+    public function toggleAttribute(Request $request, Product $product)
+    {
+        $request->validate([
+            'attribute' => 'required|in:is_featured,is_new,is_active',
+            'value' => 'required|boolean'
+        ]);
+
+        try {
+            $attribute = $request->attribute;
+            $value = $request->value;
+            
+            $product->update([$attribute => $value]);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Product {$attribute} updated successfully",
+                'product' => [
+                    'id' => $product->id,
+                    $attribute => $product->$attribute,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update product: ' . $e->getMessage()
+            ], 500);
+        }
+    }
     
     public function destroy(Product $product)
     {
