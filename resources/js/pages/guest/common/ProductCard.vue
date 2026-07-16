@@ -156,21 +156,9 @@ onUnmounted(() => {
 
         <!-- Product Info -->
         <div class="p-4">
-            <div class="mb-1">
-                <span class="text-xs text-gray-500 uppercase tracking-wider">{{ product.category_name }}</span>
-            </div>
-            
-            <h3 class="text-base font-semibold text-gray-900 hover:text-indigo-600 transition-colors line-clamp-1">
-                <a :href="`/products/${product.slug}`">{{ product.name }}</a>
-            </h3>
+            <div class="mb-1 flex justify-between items-center">
+                <span class="text-xs text-gray-500 normal-case tracking-wider">{{ product.category_name }}</span>
 
-            <!-- Price & Stock -->
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <span class="text-xl font-bold text-gray-900">{{ formatPrice(product.price) }}</span>
-                    <!-- TODO: add discounted price if available -->
-                </div>
-                
                 <!-- TODO: add the actual stock count -->
                 <div class="flex items-center gap-1">
                     <span :class="[
@@ -179,8 +167,20 @@ onUnmounted(() => {
                         product.stock > 0 ? 'bg-yellow-500' : 'bg-red-500'
                     ]"></span>
                     <span class="text-xs text-gray-500">
-                        {{ product.stock > 0 ? `${product.stock}` : 'Out of stock' }}
+                        {{ product.stock > 0 ? `In stock: ${product.stock}` : 'Out of stock' }}
                     </span>
+                </div>
+            </div>
+            
+            <h3 class="text-base font-semibold text-gray-900 hover:text-indigo-600 transition-colors line-clamp-1">
+                <a :href="`/products/${product.slug}`">{{ product.name }}</a>
+            </h3>
+
+            <!-- Price -->
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl font-bold text-gray-900">{{ formatPrice(product.price) }}</span>
+                    <!-- TODO: add discounted price if available -->
                 </div>
             </div>
 
