@@ -97,7 +97,7 @@ const toggleAttribute = async (product: Product, attribute: 'is_featured' | 'is_
 };
 
 const getTagClasses = (type: string, value: boolean) => {
-    const baseClasses = 'px-2 py-0.5 text-xs font-medium rounded-full transition-all duration-200 cursor-pointer select-none inline-flex items-center justify-center min-w-[64px]';
+    const baseClasses = 'px-1 py-0.5 text-xs font-medium rounded-sm transition-all duration-200 cursor-pointer select-none';
     
     if (!value) {
         return `${baseClasses} bg-gray-100 text-gray-400 hover:bg-gray-200`;
@@ -180,14 +180,14 @@ const getTagLabel = (type: string, product: Product) => {
             <TableBody>
                 <TableRow v-for="(product, index) in products.data" :key="product.id">
                     <TableCell class="id">{{ (products.meta.current_page - 1) * products.meta.per_page + index + 1 }}</TableCell>
-                    <TableCell><img :src="product.thumbnail_url" :alt="product.slug"></TableCell>
-                    <TableCell>{{ product.name }}</TableCell>
+                    <TableCell class="w-20"><img :src="product.thumbnail_url" :alt="product.slug"></TableCell>
+                    <TableCell class="max-w-30 overflow-hidden text-ellipsis cursor-help" :title="product.name">{{ product.name }}</TableCell>
                     <TableCell>{{ product.sku ?? '-' }}</TableCell>
                     <TableCell>{{ formatPrice(product.price) }}</TableCell>
                     <TableCell>{{ product.stock ?? 0 }}</TableCell>
                     <TableCell>{{ product.category_name }}</TableCell>
-                    <TableCell class="tags">
-                        <div class="tags-wrapper">
+                    <TableCell class="tags min-w-50 w-45">
+                        <div class="tags-wrapper flex flex-wrap gap-4">
                             <!-- Featured -->
                             <button
                                 @click="toggleAttribute(product, 'is_featured')"
@@ -219,7 +219,7 @@ const getTagLabel = (type: string, product: Product) => {
                             </button>
                         </div>
                     </TableCell>
-                    <TableCell class="actions">
+                    <TableCell class="actions w-20">
                         <div class="actions-wrapper">
                             <Link :href="productRoutes.edit(product.id).url" class="action edit">
                                 <Pencil />
@@ -262,59 +262,3 @@ const getTagLabel = (type: string, product: Product) => {
         </p>
     </div>
 </template>
-
-<style scoped>
-.tags-wrapper {
-    display: flex;
-    gap: 0.35rem;
-    flex-wrap: wrap;
-}
-
-.tags {
-    min-width: 180px;
-    width: 180px; /* Fixed width to prevent table from resizing */
-}
-
-.actions-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.table-wrapper {
-    overflow-x: auto;
-}
-
-:deep(.table) {
-    min-width: 1000px;
-}
-
-:deep(.table th),
-:deep(.table td) {
-    padding: 0.75rem 1rem;
-    vertical-align: middle;
-}
-
-:deep(.table td img) {
-    width: 40px;
-    height: 40px;
-    object-fit: cover;
-    border-radius: 0.25rem;
-}
-
-.id {
-    width: 60px;
-    text-align: center;
-}
-
-.actions {
-    width: 100px;
-    text-align: center;
-}
-
-/* Fix for the loader icon */
-:deep(.loader-icon) {
-    width: 12px;
-    height: 12px;
-}
-</style>

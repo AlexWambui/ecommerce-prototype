@@ -1,6 +1,10 @@
 @import './forms';
 @import './tables';
 
+.container-fluid {
+    @apply px-4 lg:px-16 py-4;
+}
+
 .AppLayout {
     @apply px-4 lg:px-16 py-4;
 

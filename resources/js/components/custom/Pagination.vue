@@ -21,18 +21,18 @@ const props = defineProps<{
 </script>
 
 <template>
-    <div v-if="meta?.last_page > 1" class="pagination-container">
-        <div class="pagination-wrapper">
+    <div v-if="meta?.last_page > 1" class="pagination-container mt-8 flex justify-center gap-1">
+        <div class="pagination-wrapper flex items-center gap-2">
             <Link
                 v-for="link in meta.links"
                 :key="link.label"
                 :href="link.url || '#'"
                 v-html="link.label"
                 preserve-scroll
-                class="pagination-link"
+                class="pagination-link rounded-md border px-3 py-1 text-sm transition-all hover:border-foreground"
                 :class="{
-                    'pagination-link-active': link.active,
-                    'pagination-link-disabled': !link.url
+                    'pagination-link-active bg-blue-600 text-white border-blue-600 hover:bg-blue-700': link.active,
+                    'pagination-link-disabled opacity-50 cursor-not-allowed hover:border hover:border-red-600': !link.url
                 }"
             />
         </div>

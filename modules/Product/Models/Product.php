@@ -5,6 +5,7 @@ namespace Modules\Product\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use App\Concerns\HasUuid;
@@ -101,5 +102,19 @@ class Product extends Model
     public function getThumbnailUrlAttribute(): string
     {
         return $this->images->first()?->image_url ?? asset('assets/images/default.png');
+    }
+
+    public function scopeSearch(Builder $query, $search): Builder
+    {
+        if (!$search) {
+            return $query;
+        }
+
+        $searchTerm = strtolower($search);
+        
+        return $query->where(function (Builder $q) use ($searchTerm) {
+            $q->whereRaw('LOWER(name) LIKE ?', ["%{$searchTerm}%"])
+                ->orWhereRaw('LOWER(description) LIKE ?', ["%{$searchTerm}%"]);
+        });
     }
 }
