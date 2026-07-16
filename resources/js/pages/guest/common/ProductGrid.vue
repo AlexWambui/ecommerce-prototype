@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import ProductCard from './ProductCard.vue';
 import ProductCardSkeleton from './ProductCardSkeleton.vue';
 
@@ -11,24 +12,17 @@ interface Product {
     id: number;
     name: string;
     slug: string;
-    description: string;
     price: number;
-    compare_price: number | null;
     stock: number;
     sku: string;
-    category: string;
-    tags: string[];
-    images: ProductImage[];
-    rating: number;
-    reviews_count: number;
+    category_name: string;
     is_featured: boolean;
     is_new: boolean;
-    is_on_sale: boolean;
-    created_at: string;
-    updated_at: string;
+    is_active: boolean;
+    images: ProductImage[];
 }
 
-defineProps<{
+const props = defineProps<{
     title?: string;
     products: Product[];
     columns?: 2 | 3 | 4;

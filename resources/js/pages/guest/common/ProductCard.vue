@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { usePriceFormatter } from '@/composables/usePriceFormatter';
+
+const {formatPrice} = usePriceFormatter();
 
 interface ProductImage {
     url: string;
@@ -10,21 +13,14 @@ interface Product {
     id: number;
     name: string;
     slug: string;
-    description: string;
     price: number;
-    compare_price: number | null;
     stock: number;
     sku: string;
-    category: string;
-    tags: string[];
-    images: ProductImage[];
-    rating: number;
-    reviews_count: number;
+    category_name: string;
     is_featured: boolean;
     is_new: boolean;
-    is_on_sale: boolean;
-    created_at: string;
-    updated_at: string;
+    is_active: boolean;
+    images: ProductImage[];
 }
 
 const props = defineProps<{
@@ -72,13 +68,6 @@ const stopAutoSlide = () => {
         clearInterval(autoSlideInterval);
         autoSlideInterval = null;
     }
-};
-
-const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-    }).format(price);
 };
 
 const getStars = (rating: number) => {
@@ -145,17 +134,9 @@ onUnmounted(() => {
 
             <!-- Badges -->
             <div class="absolute top-2 left-2 flex flex-col gap-1">
-                <span v-if="product.is_on_sale" 
-                      class="bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg">
-                    SALE
-                </span>
                 <span v-if="product.is_new" 
                       class="bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg">
                     NEW
-                </span>
-                <span v-if="product.is_featured && !product.is_on_sale && !product.is_new" 
-                      class="bg-yellow-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg">
-                    FEATURED
                 </span>
             </div>
 
@@ -176,36 +157,21 @@ onUnmounted(() => {
         <!-- Product Info -->
         <div class="p-4">
             <div class="mb-1">
-                <span class="text-xs text-gray-500 uppercase tracking-wider">{{ product.category }}</span>
+                <span class="text-xs text-gray-500 uppercase tracking-wider">{{ product.category_name }}</span>
             </div>
             
             <h3 class="text-base font-semibold text-gray-900 hover:text-indigo-600 transition-colors line-clamp-1">
                 <a :href="`/products/${product.slug}`">{{ product.name }}</a>
             </h3>
-            
-            <p class="text-sm text-gray-600 mb-2 line-clamp-2">
-                {{ product.description }}
-            </p>
-
-            <!-- Rating -->
-            <div class="flex items-center gap-1 mb-3">
-                <div class="flex items-center">
-                    <span v-for="star in getStars(product.rating).fullStars" :key="star" class="text-yellow-400 text-sm">★</span>
-                    <span v-if="getStars(product.rating).hasHalfStar" class="text-yellow-400 text-sm">☆</span>
-                    <span v-for="star in 5 - Math.ceil(product.rating)" :key="'empty-' + star" class="text-gray-300 text-sm">★</span>
-                </div>
-                <span class="text-xs text-gray-500 ml-1">({{ product.reviews_count }})</span>
-            </div>
 
             <!-- Price & Stock -->
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <span class="text-xl font-bold text-gray-900">{{ formatPrice(product.price) }}</span>
-                    <span v-if="product.compare_price" class="text-sm text-gray-400 line-through">
-                        {{ formatPrice(product.compare_price) }}
-                    </span>
+                    <!-- TODO: add discounted price if available -->
                 </div>
                 
+                <!-- TODO: add the actual stock count -->
                 <div class="flex items-center gap-1">
                     <span :class="[
                         'inline-block w-2 h-2 rounded-full',

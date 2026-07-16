@@ -1,12 +1,9 @@
 <script setup lang="ts">
-import Hero from './Hero.vue';
 import ProductGrid from '@/pages/guest/common/ProductGrid.vue';
 import { ref } from 'vue';
 
 const props = defineProps<{
-    featuredProducts: any[];
-    newProducts: any[];
-    saleProducts: any[];
+    new_arrivals: any[];
 }>();
 
 const isLoading = ref(false);
@@ -25,7 +22,7 @@ const loadMore = () => {
         <!-- New Arrivals -->
         <ProductGrid 
             title="New Arrivals" 
-            :products="newProducts" 
+            :products="new_arrivals" 
             :columns="4"
             class="bg-gray-50"
         />
