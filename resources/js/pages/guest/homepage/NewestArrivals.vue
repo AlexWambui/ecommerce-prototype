@@ -18,9 +18,9 @@ const loadMore = () => {
 </script>
 
 <template>
-    <div>
-        <!-- New Arrivals -->
+    <div class="new_arrivals">
         <ProductGrid 
+            v-if="new_arrivals?.length"
             title="New Arrivals" 
             :products="new_arrivals" 
             :columns="4"

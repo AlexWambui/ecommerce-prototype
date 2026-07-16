@@ -76,7 +76,7 @@ const emit = defineEmits<{
             <div v-if="!loading && products.length === 0" class="text-center py-16">
                 <div class="text-gray-400 text-6xl mb-4">📦</div>
                 <h3 class="text-xl font-semibold text-gray-600 mb-2">No products found</h3>
-                <p class="text-gray-400">Check back later for new arrivals!</p>
+                <p class="text-gray-400">Check back later!</p>
             </div>
         </div>
     </section>
