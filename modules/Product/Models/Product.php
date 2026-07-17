@@ -28,7 +28,7 @@ class Product extends Model
         'thumbnail_url',
     ];
 
-        protected static function booted()
+    protected static function booted()
     {
         static::updating(function ($product) {
             if ($product->isDirty('name')) {
