@@ -3,7 +3,7 @@ import heroImage from '@/assets/images/retail-and-online-shopping.jpg';
 </script>
 
 <template>
-    <section class="relative w-full min-h-[80vh] md:min-h-[90vh] flex items-center justify-center bg-cover bg-center bg-no-repeat" :style="{ backgroundImage: `url(${heroImage})` }">
+    <section class="Hero relative w-full min-h-[80vh] md:min-h-[90vh] flex items-center justify-center bg-cover bg-center bg-no-repeat" :style="{ backgroundImage: `url(${heroImage})` }">
         
         <!-- Gradient Overlay -->
         <div class="absolute inset-0 bg-linear-to-r from-black/70 via-black/50 to-black/70 z-10"></div>

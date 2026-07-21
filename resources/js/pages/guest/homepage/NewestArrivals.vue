@@ -18,13 +18,11 @@ const loadMore = () => {
 </script>
 
 <template>
-    <div class="new_arrivals">
-        <ProductGrid 
-            v-if="new_arrivals?.length"
-            title="New Arrivals" 
-            :products="new_arrivals" 
-            :columns="4"
-            class="bg-gray-50"
-        />
-    </div>
+    <ProductGrid 
+        v-if="new_arrivals?.length"
+        title="New Arrivals" 
+        :products="new_arrivals" 
+        :columns="4"
+        class="NewArrivals"
+    />
 </template>

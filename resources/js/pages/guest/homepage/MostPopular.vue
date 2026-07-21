@@ -18,12 +18,10 @@ const loadMore = () => {
 </script>
 
 <template>
-    <div class="most_popular">
-        <ProductGrid 
-            title="Most Popular" 
-            :products="most_popular"
-            :columns="4"
-            class="bg-gray-50"
-        />
-    </div>
+    <ProductGrid 
+        title="Most Popular" 
+        :products="most_popular"
+        :columns="4"
+        class="MostPopular"
+    />
 </template>

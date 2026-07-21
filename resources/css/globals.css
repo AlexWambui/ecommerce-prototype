@@ -1,8 +1,15 @@
 @import './forms';
 @import './tables';
 
-.container-fluid {
-    @apply px-4 lg:px-16 py-4;
+.GuestLayout,
+.AppLayout {
+    .container-fluid {
+        @apply px-4 lg:px-16 py-4;
+    }
+}
+
+.GuestLayout {
+    @apply bg-background text-foreground;
 }
 
 .AppLayout {
