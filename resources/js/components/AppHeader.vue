@@ -7,37 +7,19 @@ import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-    NavigationMenu,
-    NavigationMenuItem,
-    NavigationMenuList,
-    navigationMenuTriggerStyle,
-} from '@/components/ui/navigation-menu';
-import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from '@/components/ui/sheet';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { NavigationMenu, NavigationMenuItem, NavigationMenuList, navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import UserMenuContent from '@/components/UserMenuContent.vue';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import { getInitials } from '@/composables/useInitials';
 import { toUrl } from '@/lib/utils';
 import { dashboard } from '@/routes';
+import contactMessageRoutes from '@/routes/contact-messages';
 import userRoutes from '@/routes/users';
 import type { BreadcrumbItem, NavItem } from '@/types';
+import productRoutes from '@/routes/products';
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
@@ -67,7 +49,7 @@ const mainNavItems = computed(() => {
         },
     ];
 
-    if (isSuperAdmin.value) {
+    if (isSuperAdmin.value || isAdmin.value) {
         items.push(
             {
                 title: 'Users',
@@ -76,32 +58,12 @@ const mainNavItems = computed(() => {
             },
             {
                 title: 'Products',
-                href: userRoutes.index(), // TODO: Correct this route
+                href: productRoutes.index(),
                 icon: Barcode,
             },
             {
                 title: 'Callbacks',
-                href: userRoutes.index(), // TODO: Correct this route
-                icon: PhoneCall,
-            },
-        );
-    }
-
-    if (isAdmin.value) {
-        items.push(
-            {
-                title: 'Users',
-                href: userRoutes.index(),
-                icon: Users
-            },
-            {
-                title: 'Products',
-                href: userRoutes.index(), // TODO: Correct this route
-                icon: Barcode,
-            },
-            {
-                title: 'Callbacks',
-                href: userRoutes.index(), // TODO: Correct this route
+                href: contactMessageRoutes.index(),
                 icon: PhoneCall,
             },
         );
@@ -111,7 +73,7 @@ const mainNavItems = computed(() => {
         items.push(
             {
                 title: 'Products',
-                href: userRoutes.index(), // TODO: Correct this route
+                href: productRoutes.index(),
                 icon: Barcode,
             },
         );
