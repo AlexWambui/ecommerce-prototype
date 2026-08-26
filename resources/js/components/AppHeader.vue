@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Menu, Search, Users } from '@lucide/vue';
+import { BookOpen, LayoutGrid, Menu, Users, PhoneCall, Barcode } from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
@@ -50,41 +50,100 @@ const props = withDefaults(defineProps<Props>(), {
 const page = usePage();
 const auth = computed(() => page.props.auth);
 const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
+const user = computed(() => page.props.auth.user);
+const isAdmin = computed(() => user.value?.role_label === 'Admin');
+const isSuperAdmin = computed(() => user.value?.role_label === 'Super Admin');
+const isCashier = computed(() => user.value?.role_label === 'Cashier');
 
 const activeItemStyles =
     'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Users',
-        href: userRoutes.index(),
-        icon: Users,
+const mainNavItems = computed(() => {
+    const items = [
+        {
+            title: 'Dashboard',
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
+    ];
+
+    if (isSuperAdmin.value) {
+        items.push(
+            {
+                title: 'Users',
+                href: userRoutes.index(),
+                icon: Users
+            },
+            {
+                title: 'Products',
+                href: userRoutes.index(), // TODO: Correct this route
+                icon: Barcode,
+            },
+            {
+                title: 'Callbacks',
+                href: userRoutes.index(), // TODO: Correct this route
+                icon: PhoneCall,
+            },
+        );
     }
-];
+
+    if (isAdmin.value) {
+        items.push(
+            {
+                title: 'Users',
+                href: userRoutes.index(),
+                icon: Users
+            },
+            {
+                title: 'Products',
+                href: userRoutes.index(), // TODO: Correct this route
+                icon: Barcode,
+            },
+            {
+                title: 'Callbacks',
+                href: userRoutes.index(), // TODO: Correct this route
+                icon: PhoneCall,
+            },
+        );
+    }
+
+    if (isCashier.value) {
+        items.push(
+            {
+                title: 'Products',
+                href: userRoutes.index(), // TODO: Correct this route
+                icon: Barcode,
+            },
+        );
+    }
+
+    return items;
+});
 
 const rightNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
+        title: 'Docs',
+        href: '/',
         icon: BookOpen,
     },
+
+    // {
+    //     title: 'Repository',
+    //     href: 'https://github.com/laravel/vue-starter-kit',
+    //     icon: Folder,
+    // },
+    // {
+    //     title: 'Documentation',
+    //     href: 'https://laravel.com/docs/starter-kits#vue',
+    //     icon: BookOpen,
+    // },
 ];
 </script>
 
 <template>
     <div>
         <div class="border-b border-sidebar-border/80">
-            <div class="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
+            <div class="mx-auto flex h-16 items-center px-4 lg:px-16">
                 <!-- Mobile Menu -->
                 <div class="lg:hidden">
                     <Sheet>
@@ -135,7 +194,7 @@ const rightNavItems: NavItem[] = [
                                         v-for="item in rightNavItems"
                                         :key="item.title"
                                         :href="toUrl(item.href)"
-                                        target="_blank"
+                                        target="_self"
                                         rel="noopener noreferrer"
                                         class="flex items-center space-x-2 text-sm font-medium"
                                     >
@@ -196,7 +255,7 @@ const rightNavItems: NavItem[] = [
 
                 <div class="ml-auto flex items-center space-x-2">
                     <div class="relative flex items-center space-x-1">
-                        <Button
+                        <!-- <Button
                             variant="ghost"
                             size="icon"
                             class="group h-9 w-9 cursor-pointer"
@@ -204,7 +263,7 @@ const rightNavItems: NavItem[] = [
                             <Search
                                 class="size-5 opacity-80 group-hover:opacity-100"
                             />
-                        </Button>
+                        </Button> -->
 
                         <div class="hidden space-x-1 lg:flex">
                             <template
@@ -222,7 +281,7 @@ const rightNavItems: NavItem[] = [
                                             >
                                                 <a
                                                     :href="toUrl(item.href)"
-                                                    target="_blank"
+                                                    target="_self"
                                                     rel="noopener noreferrer"
                                                 >
                                                     <span class="sr-only">{{
