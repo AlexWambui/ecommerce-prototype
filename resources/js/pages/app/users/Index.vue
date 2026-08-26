@@ -3,10 +3,10 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import { ref, watch, computed } from 'vue';
 import AppPageHeader from '@/components/custom/AppPageHeader.vue';
-import usersRoutes from '@/routes/users';
 import DeleteConfirmationDialog from '@/components/custom/DeleteConfirmation.vue';
 import Pagination from '@/components/custom/Pagination.vue';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import usersRoutes from '@/routes/users';
 
 defineOptions({
     layout: {
@@ -146,7 +146,6 @@ const clearFilters = () => {
 
 const isRoleActive = (roleValue: string) => selectedRole.value === roleValue;
 
-
 const getRowNumber = (index: number) => (props.users.meta.current_page - 1) * props.users.meta.per_page + index + 1;
 </script>
 
@@ -155,10 +154,11 @@ const getRowNumber = (index: number) => (props.users.meta.current_page - 1) * pr
 
     <div class="app-container">
         <AppPageHeader
+            resourceName="Users"
             v-model="search"
+            search-placeholder="Search by name or email..."
             create-url="/users/create"
             create-label="User"
-            search-placeholder="Search by name or email..."
             @search="handleSearch"
         />
 
