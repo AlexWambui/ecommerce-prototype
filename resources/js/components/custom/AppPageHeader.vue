@@ -6,8 +6,9 @@ import Button from '@/components/ui/button/Button.vue';
 import Input from '@/components/ui/input/Input.vue';
 
 interface Props {
-    createUrl: string;
-    createLabel: string;
+    resourceName: string;
+    createUrl?: string;
+    createLabel?: string;
     searchPlaceholder?: string;
     modelValue?: string;
 }
@@ -18,6 +19,8 @@ interface Emits {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+    createUrl: '',
+    createLabel: 'New',
     searchPlaceholder: 'Search...',
     modelValue: '',
 });
@@ -43,7 +46,7 @@ watch(() => props.modelValue, (value) => {
 <template>
     <div class="AppPageHeader grid lg:grid-cols-3 gap-4 md:gap-6 mb-4">
         <div class="info">
-            <h1 class="font-semibold">Users</h1>
+            <h1 class="font-semibold">{{ resourceName }}</h1>
         </div>
         
         <div class="search lg:flex lg:justify-center">
@@ -55,7 +58,7 @@ watch(() => props.modelValue, (value) => {
             />
         </div>
 
-        <div class="action lg:justify-self-end">
+        <div v-if="createUrl" class="action lg:justify-self-end">
             <Link :href="createUrl">
                 <Button>New {{ createLabel }}</Button>
             </Link>
