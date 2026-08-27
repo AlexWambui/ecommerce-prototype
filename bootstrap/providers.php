@@ -3,17 +3,14 @@
 use App\Providers\AppServiceProvider;
 use App\Providers\FortifyServiceProvider;
 
-use Modules\User\Providers\UserServiceProvider;
-use Modules\Product\Providers\ProductServiceProvider;
-use Modules\ContactMessage\Providers\ContactMessageServiceProvider;
-use Modules\Delivery\Providers\DeliveryServiceProvider;
-
 return [
     AppServiceProvider::class,
     FortifyServiceProvider::class,
 
-    UserServiceProvider::class,
-    ProductServiceProvider::class,
-    ContactMessageServiceProvider::class,
-    DeliveryServiceProvider::class,
+    \Modules\User\Providers\UserServiceProvider::class,
+    \Modules\Product\Providers\ProductServiceProvider::class,
+    \Modules\ContactMessage\Providers\ContactMessageServiceProvider::class,
+    \Modules\Delivery\Providers\DeliveryServiceProvider::class,
+    \Modules\Order\Providers\OrderServiceProvider::class,
+    \Modules\Payment\Providers\PaymentServiceProvider::class,
 ];

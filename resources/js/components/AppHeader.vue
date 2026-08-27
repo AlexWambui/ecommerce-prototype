@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, LayoutGrid, Menu, Users, PhoneCall, Barcode, TruckElectric } from '@lucide/vue';
+import { BookOpen, LayoutGrid, Menu, Users, PhoneCall, Barcode, TruckElectric, Clipboard } from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
@@ -18,6 +18,7 @@ import { toUrl } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import contactMessageRoutes from '@/routes/contact-messages';
 import deliveryRoutes from '@/routes/delivery-locations';
+import orderRoutes from '@/routes/orders';
 import productRoutes from '@/routes/products';
 import userRoutes from '@/routes/users';
 import type { BreadcrumbItem, NavItem } from '@/types';
@@ -53,9 +54,9 @@ const mainNavItems = computed(() => {
     if (isSuperAdmin.value || isAdmin.value) {
         items.push(
             {
-                title: 'Users',
-                href: userRoutes.index(),
-                icon: Users
+                title: 'Orders',
+                href: orderRoutes.index(),
+                icon: Clipboard,
             },
             {
                 title: 'Products',
@@ -66,6 +67,11 @@ const mainNavItems = computed(() => {
                 title: 'Deliveries',
                 href: deliveryRoutes.index(),
                 icon: TruckElectric,
+            },
+            {
+                title: 'Users',
+                href: userRoutes.index(),
+                icon: Users
             },
             {
                 title: 'Callbacks',
