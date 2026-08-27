@@ -8,11 +8,13 @@ const user = computed(() => page.props.auth.user);
 
 interface Props {
     stats: {
-        total_products: number;
-        total_product_categories: number;
         total_users: number;
         total_admins: number;
         total_cashiers: number;
+        total_products: number;
+        total_product_categories: number;
+        total_delivery_locations: number;
+        total_delivery_areas: number;
         total_callbacks: number;
         total_unread_callbacks: number;
     }
@@ -48,6 +50,14 @@ defineProps<Props>();
                     <template #extras>
                         <span class="text-sm text-muted-foreground">
                             {{ stats.total_product_categories }} Categories
+                        </span>
+                    </template>
+                </DashboardStat>
+
+                <DashboardStat :stat="stats.total_delivery_locations" label="Locations">
+                    <template #extras>
+                        <span class="text-sm text-muted-foreground">
+                            {{ stats.total_delivery_areas }} Areas
                         </span>
                     </template>
                 </DashboardStat>

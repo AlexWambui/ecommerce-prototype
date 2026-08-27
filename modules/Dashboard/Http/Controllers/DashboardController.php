@@ -8,6 +8,8 @@ use Modules\User\Enums\UserRoles;
 use Modules\User\Models\User;
 use Modules\Product\Models\Product;
 use Modules\Product\Models\ProductCategory;
+use Modules\Delivery\Models\DeliveryLocation;
+use Modules\Delivery\Models\DeliveryArea;
 use Modules\ContactMessage\Models\ContactMessage;
 
 class DashboardController extends Controller
@@ -26,6 +28,8 @@ class DashboardController extends Controller
                     'total_cashiers' => User::where('role', '=', UserRoles::CASHIER)->count(),
                     'total_products' => Product::count(),
                     'total_product_categories' => ProductCategory::count(),
+                    'total_delivery_locations' => DeliveryLocation::count(),
+                    'total_delivery_areas' => DeliveryArea::count(),
                     'total_callbacks' => ContactMessage::count(),
                     'total_unread_callbacks' => ContactMessage::where('is_read', false)->count(),
                 ]
@@ -41,6 +45,8 @@ class DashboardController extends Controller
                     'total_cashiers' => User::where('role', '=', UserRoles::CASHIER)->count(),
                     'total_products' => Product::count(),
                     'total_product_categories' => ProductCategory::count(),
+                    'total_delivery_locations' => DeliveryLocation::count(),
+                    'total_delivery_areas' => DeliveryArea::count(),
                     'total_callbacks' => ContactMessage::count(),
                     'total_unread_callbacks' => ContactMessage::where('is_read', false)->count(),
                 ]
