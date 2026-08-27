@@ -1,23 +1,21 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 
-import productCategoryRoutes from '@/routes/product-categories';
-import productRoutes from '@/routes/products';
+import deliveryLocationRoutes from '@/routes/delivery-locations';
 
 interface Props {
-    currentPage: 'products' | 'discounts' | 'inventory' | 'product-categories';
+    currentPage: 'locations' | 'areas';
 }
 
 defineProps<Props>();
 
 const links = [
-    { name: 'Products', href: productRoutes.index().url, key: 'products' },
-    { name: 'Categories', href: productCategoryRoutes.index(), key: 'product-categories' },
+    { name: 'Locations', href: deliveryLocationRoutes.index().url, key: 'locations' },
 ];
 </script>
 
 <template>
-    <div class="shop-nav pb-4 w-full border-b border-sidebar-border/80" aria-label="Breadcrumb">
+    <div class="pb-4 w-full border-b border-sidebar-border/80" aria-label="Breadcrumb">
         <ol class="flex items-center gap-2 text-sm">
             <li v-for="(item, idx) in links" :key="item.key" class="flex items-center gap-2">
                 <Link

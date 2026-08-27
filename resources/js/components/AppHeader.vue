@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, LayoutGrid, Menu, Users, PhoneCall, Barcode } from '@lucide/vue';
+import { BookOpen, LayoutGrid, Menu, Users, PhoneCall, Barcode, TruckElectric } from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
@@ -17,9 +17,10 @@ import { getInitials } from '@/composables/useInitials';
 import { toUrl } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import contactMessageRoutes from '@/routes/contact-messages';
+import deliveryRoutes from '@/routes/delivery-locations';
+import productRoutes from '@/routes/products';
 import userRoutes from '@/routes/users';
 import type { BreadcrumbItem, NavItem } from '@/types';
-import productRoutes from '@/routes/products';
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
@@ -60,6 +61,11 @@ const mainNavItems = computed(() => {
                 title: 'Products',
                 href: productRoutes.index(),
                 icon: Barcode,
+            },
+            {
+                title: 'Deliveries',
+                href: deliveryRoutes.index(),
+                icon: TruckElectric,
             },
             {
                 title: 'Callbacks',
