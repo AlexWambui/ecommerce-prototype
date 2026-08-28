@@ -11,6 +11,8 @@ use Modules\Product\Models\ProductCategory;
 use Modules\Delivery\Models\DeliveryLocation;
 use Modules\Delivery\Models\DeliveryArea;
 use Modules\ContactMessage\Models\ContactMessage;
+use Modules\Order\Enums\OrderStatusEnum;
+use Modules\Order\Models\Order;
 
 class DashboardController extends Controller
 {
@@ -26,10 +28,16 @@ class DashboardController extends Controller
                     'total_users' => User::where('role', '!=', UserRoles::SUPER_ADMIN)->count(),
                     'total_admins' => User::where('role', '=', UserRoles::ADMIN)->count(),
                     'total_cashiers' => User::where('role', '=', UserRoles::CASHIER)->count(),
+
                     'total_products' => Product::count(),
                     'total_product_categories' => ProductCategory::count(),
+
+                    'total_orders' => Order::count(),
+                    'orders_need_attention' => Order::where('order_status', OrderStatusEnum::PENDING->value)->whereColumn('amount_paid', '>=', 'total_selling_price')->count(),
+
                     'total_delivery_locations' => DeliveryLocation::count(),
                     'total_delivery_areas' => DeliveryArea::count(),
+
                     'total_callbacks' => ContactMessage::count(),
                     'total_unread_callbacks' => ContactMessage::where('is_read', false)->count(),
                 ]
@@ -43,10 +51,16 @@ class DashboardController extends Controller
                     'total_users' => User::where('role', '!=', UserRoles::SUPER_ADMIN)->count(),
                     'total_admins' => User::where('role', '=', UserRoles::ADMIN)->count(),
                     'total_cashiers' => User::where('role', '=', UserRoles::CASHIER)->count(),
+
                     'total_products' => Product::count(),
                     'total_product_categories' => ProductCategory::count(),
+
+                    'total_orders' => Order::count(),
+                    'orders_need_attention' => Order::where('order_status', OrderStatusEnum::PENDING->value)->whereColumn('amount_paid', '>=', 'total_selling_price')->count(),
+
                     'total_delivery_locations' => DeliveryLocation::count(),
                     'total_delivery_areas' => DeliveryArea::count(),
+
                     'total_callbacks' => ContactMessage::count(),
                     'total_unread_callbacks' => ContactMessage::where('is_read', false)->count(),
                 ]

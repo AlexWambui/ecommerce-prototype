@@ -11,10 +11,16 @@ interface Props {
         total_users: number;
         total_admins: number;
         total_cashiers: number;
+
         total_products: number;
         total_product_categories: number;
+
+        total_orders: number;
+        orders_need_attention: number;
+
         total_delivery_locations: number;
         total_delivery_areas: number;
+
         total_callbacks: number;
         total_unread_callbacks: number;
     }
@@ -42,6 +48,14 @@ defineProps<Props>();
                     <template #extras>
                         <span class="text-sm text-muted-foreground">
                             {{ stats.total_admins }} Admins & {{ stats.total_cashiers }} Cashiers
+                        </span>
+                    </template>
+                </DashboardStat>
+
+                <DashboardStat :stat="stats.total_orders" label="Orders">
+                    <template #extras>
+                        <span class="text-sm text-muted-foreground">
+                            {{ stats.orders_need_attention }} need attention
                         </span>
                     </template>
                 </DashboardStat>
