@@ -5,11 +5,13 @@ namespace Modules\Order\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
+use InvalidArgumentException;
 use Modules\User\Models\User;
 use Modules\Payment\Models\Payment;
 use App\Concerns\HasUuid;
+use Modules\Order\Enums\OrderStatusEnum;
+use Modules\Order\Enums\DeliveryStatusEnum;
 
 class Order extends Model
 {
@@ -22,22 +24,12 @@ class Order extends Model
         'tax' => 'decimal:2',
         'shipping_cost' => 'decimal:2',
         'discount' => 'decimal:2',
-        'total' => 'decimal:2',
+        'total_selling_price' => 'decimal:2',
+        'amount_paid' => 'decimal:2',
         'sold_at' => 'datetime',
+        'order_status' => OrderStatusEnum::class,
+        'delivery_status' => DeliveryStatusEnum::class,
     ];
-
-    // Order fulfillment statuses
-    const STATUS_PENDING = 'pending';
-    const STATUS_PROCESSING = 'processing';
-    const STATUS_SHIPPED = 'shipped';
-    const STATUS_DELIVERED = 'delivered';
-    const STATUS_CANCELLED = 'cancelled';
-
-    // Payment statuses
-    const PAYMENT_PENDING = 'pending';
-    const PAYMENT_PARTIALLY_PAID = 'partially_paid';
-    const PAYMENT_PAID = 'paid';
-    const PAYMENT_DELIVERED = 'refunded';
 
     public function user(): BelongsTo
     {
@@ -54,9 +46,106 @@ class Order extends Model
         return $this->hasMany(OrderStatus::class, 'order_id');
     }
 
-    public function currentOrderStatus(): ?OrderStatus
+    public function currentOrderStatus()
     {
-        return $this->statuses->first();
+        return $this->belongsTo(OrderStatus::class, 'current_order_status_id');
+    }
+
+    public function currentDeliveryStatus()
+    {
+        return $this->belongsTo(OrderStatus::class, 'current_delivery_status_id');
+    }
+
+    public function updateOrderStatus(OrderStatusEnum $status, ?string $notes = null, ?array $metadata = null, ?int $userId = null): OrderStatus
+    {
+        // Validate transition
+        if (!$this->canTransitionToOrderStatus($status)) {
+            throw new InvalidArgumentException("Invalid order status transition from {$this->order_status->value} to {$status->value}");
+        }
+
+        $statusRecord = $this->orderStatuses()->create([
+            'type' => 'order',
+            'status' => $status->value,
+            'notes' => $notes,
+            'metadata' => $metadata,
+            'user_id' => $userId ?? Auth::id(),
+            'is_system' => is_null($userId),
+            'changed_at' => now(),
+        ]);
+
+        $this->update([
+            'order_status' => $status->value,
+            'current_order_status_id' => $statusRecord->id,
+        ]);
+
+        return $statusRecord;
+    }
+
+    public function updateDeliveryStatus(DeliveryStatusEnum $status, ?string $notes = null, ?array $metadata = null, ?int $userId = null): OrderStatus
+    {
+        // Validate transition
+        if (!$this->canTransitionToDeliveryStatus($status)) {
+            throw new InvalidArgumentException("Invalid delivery status transition from {$this->delivery_status->value} to {$status->value}");
+        }
+
+        $statusRecord = $this->orderStatuses()->create([
+            'type' => 'delivery',
+            'status' => $status->value,
+            'notes' => $notes,
+            'metadata' => $metadata,
+            'user_id' => $userId ?? Auth::id(),
+            'is_system' => is_null($userId),
+            'changed_at' => now(),
+        ]);
+
+        $this->update([
+            'delivery_status' => $status->value,
+            'current_delivery_status_id' => $statusRecord->id,
+        ]);
+
+        return $statusRecord;
+    }
+
+    public function canTransitionToOrderStatus(OrderStatusEnum $newStatus): bool
+    {
+        $currentStatus = $this->order_status ?? OrderStatusEnum::PENDING;
+        $validTransitions = $this->getValidOrderTransitions();
+        
+        return in_array($newStatus->value, $validTransitions[$currentStatus->value] ?? []);
+    }
+
+    public function canTransitionToDeliveryStatus(DeliveryStatusEnum $newStatus): bool
+    {
+        $currentStatus = $this->delivery_status ?? DeliveryStatusEnum::PENDING;
+        $validTransitions = $this->getValidDeliveryTransitions();
+        
+        return in_array($newStatus->value, $validTransitions[$currentStatus->value] ?? []);
+    }
+
+    protected function getValidOrderTransitions(): array
+    {
+        return [
+            'pending' => ['confirmed', 'cancelled'],
+            'confirmed' => ['processing', 'cancelled'],
+            'processing' => ['ready_for_pickup', 'cancelled'],
+            'ready_for_pickup' => ['completed', 'cancelled'],
+            'completed' => ['refunded'],
+            'cancelled' => ['refunded'],
+            'refunded' => [],
+        ];
+    }
+
+    protected function getValidDeliveryTransitions(): array
+    {
+        return [
+            'pending' => ['picked_up'],
+            'picked_up' => ['in_transit'],
+            'in_transit' => ['out_for_delivery', 'delivery_failed'],
+            'out_for_delivery' => ['delivered', 'delivery_failed'],
+            'delivered' => ['returned'],
+            'delivery_failed' => ['returned'],
+            'returned' => [],
+        ];
     }
 
     public function payments(): HasMany
@@ -69,14 +158,14 @@ class Order extends Model
         $total_paid = $this->payments()->sum('amount');
 
         if ($total_paid <= 0) {
-            return self::PAYMENT_PENDING;
+            return 'pending';
         }
 
         if ($total_paid >= $this->total_selling_price) {
-            return self::PAYMENT_PAID;
+            return 'paid';
         }
 
-        return self::PAYMENT_PARTIALLY_PAID;
+        return 'partially_paid';
     }
 
     public function getTotalPaidAttribute(): float
@@ -100,40 +189,19 @@ class Order extends Model
         $this->save();
     }
 
-    public function getDeliveryStatusAttribute(): string
-    {
-        // If delivery method is 'shop', it's always 'pickup'
-        if ($this->delivery_method === 'shop') {
-            return 'pickup';
-        }
-
-        // For delivery orders, check the order status
-        return $this->order_status ?? self::STATUS_PENDING;
-    }
-
     public function getFullNameAttribute(): string
     {
-        return $this->customer_first_name . ' ' . $this->customer_last_name;
+        return $this->customer_name ?? 'Guest';
     }
 
-    public function getFullShippingAddressAttribute(): string
+    public function isShopPickup(): bool
     {
-        $address = $this->shipping_address_line1;
-        if ($this->shipping_address_line2) {
-            $address .= ', ' . $this->shipping_address_line2;
-        }
-        $address .= ', ' . $this->shipping_city;
-        if ($this->shipping_state) {
-            $address .= ', ' . $this->shipping_state;
-        }
-        $address .= ' ' . $this->shipping_postal_code;
-        $address .= ', ' . $this->shipping_country;
-        return $address;
+        return $this->delivery_method === 'shop';
     }
 
     public function canBeCancelled(): bool
     {
-        return in_array($this->status, ['pending', 'processing']);
+        return in_array($this->order_status->value, ['pending', 'confirmed', 'processing']);
     }
 
     public function canBeShipped(): bool
@@ -141,29 +209,9 @@ class Order extends Model
         return $this->status === 'processing' && !$this->shipped_at;
     }
 
-    public function markAsPaid(): void
-    {
-        $this->update([
-            'status' => 'processing',
-            'paid_at' => now(),
-        ]);
-        $this->addStatus('processing', 'Payment confirmed');
-    }
-
-    public function addStatus(string $status, ?string $notes = null, ?int $userId = null): OrderStatus
-    {
-        return $this->statuses()->create([
-            'order_id' => $this->id,
-            'status' => $status,
-            'notes' => $notes,
-            'user_id' => $userId,
-            'is_system' => $userId === null,
-        ]);
-    }
-
     public function scopeCompleted($query)
     {
-        return $query->where('status', 'completed');
+        return $query->where('order_status', OrderStatusEnum::COMPLETED->value);
     }
 
     public function scopeForUser($query, int $userId)
@@ -173,7 +221,7 @@ class Order extends Model
 
     public function scopeDelivered($query)
     {
-        return $query->where('order_status', self::STATUS_DELIVERED);
+        return $query->where('delivery_status', DeliveryStatusEnum::DELIVERED->value);
     }
 
     public function scopePaid($query)
@@ -183,22 +231,12 @@ class Order extends Model
 
     public function scopePending($query)
     {
-        return $query->where('order_status', self::STATUS_PENDING);
+        return $query->where('order_status', OrderStatusEnum::PENDING->value);
     }
 
     public function scopeProcessing($query)
     {
-        return $query->where('order_status', self::STATUS_PROCESSING);
-    }
-
-    public function scopeShipped($query)
-    {
-        return $query->where('order_status', self::STATUS_SHIPPED);
-    }
-
-    public function scopeCancelled($query)
-    {
-        return $query->where('order_status', self::STATUS_CANCELLED);
+        return $query->where('order_status', OrderStatusEnum::PROCESSING->value);
     }
 
     public function scopeSearch($query, $search)

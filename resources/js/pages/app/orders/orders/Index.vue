@@ -22,6 +22,9 @@ interface Order {
     amount_paid: number;
     payment_status: string;
     order_status: string;
+    order_status_label: string;
+    delivery_status: string;
+    delivery_status_label: string;
 }
 
 interface Props {
@@ -63,6 +66,46 @@ const getDisplayRange = computed(() => {
 });
 
 const hasActiveFilters = computed(() => !!search.value);
+
+// Helper to get status color classes
+const getOrderStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+        'pending': 'text-yellow-600',
+        'confirmed': 'text-blue-600',
+        'processing': 'text-indigo-600',
+        'ready_for_pickup': 'text-purple-600',
+        'completed': 'text-green-600',
+        'cancelled': 'text-red-600',
+        'refunded': 'text-gray-600',
+    };
+
+    return colors[status] || 'text-gray-600';
+};
+
+const getDeliveryStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+        'pending': 'text-yellow-600',
+        'picked_up': 'text-green-600',
+        'in_transit': 'text-indigo-600',
+        'out_for_delivery': 'text-purple-600',
+        'delivered': 'text-green-600',
+        'delivery_failed': 'text-red-600',
+        'returned': 'text-gray-600',
+    };
+
+    return colors[status] || 'text-gray-600';
+};
+
+const getPaymentStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+        'paid': 'text-green-600',
+        'pending': 'text-yellow-600',
+        'partially_paid': 'text-blue-600',
+        'failed': 'text-red-600',
+    };
+
+    return colors[status] || 'text-gray-600';
+};
 </script>
 
 <template>
@@ -89,6 +132,7 @@ const hasActiveFilters = computed(() => !!search.value);
                     <TableHead>Total</TableHead>
                     <TableHead>Amount Paid</TableHead>
                     <TableHead>Payment</TableHead>
+                    <TableHead>Order</TableHead>
                     <TableHead>Delivery</TableHead>
                     <TableHead class="actions">Actions</TableHead>
                 </TableRow>
@@ -103,26 +147,14 @@ const hasActiveFilters = computed(() => !!search.value);
                     <TableCell>{{ order.delivery_address }}</TableCell>
                     <TableCell>{{ formatPrice(order.total_selling_price) }}</TableCell>
                     <TableCell>{{ formatPrice(order.amount_paid) }}</TableCell>
-                    <TableCell 
-                        :class="{
-                            'text-green-600': order.payment_status === 'paid',
-                            'text-yellow-600': order.payment_status === 'pending',
-                            'text-blue-600': order.payment_status === 'partially_paid',
-                            'text-red-600': order.payment_status === 'failed',
-                        }"
-                    >
+                    <TableCell :class="getPaymentStatusColor(order.payment_status)">
                         {{ order.payment_status }}
                     </TableCell>
-                    <TableCell 
-                        :class="{
-                            'text-yellow-600': order.order_status === 'pending',
-                            'text-blue-600': order.order_status === 'processing',
-                            'text-purple-600': order.order_status === 'shipped',
-                            'text-green-600': order.order_status === 'delivered',
-                            'text-red-600': order.order_status === 'cancelled',
-                        }"
-                    >
-                        {{ order.order_status }}
+                    <TableCell :class="getOrderStatusColor(order.order_status)">
+                        {{ order.order_status_label }}
+                    </TableCell>
+                    <TableCell :class="getDeliveryStatusColor(order.delivery_status)">
+                        {{ order.delivery_status_label || 'N/A' }}
                     </TableCell>
                     <TableCell class="actions w-20">
                         <div class="actions-wrapper">

@@ -40,6 +40,9 @@ interface Order {
     payment_method: string;
     payment_status: string;
     order_status: string;
+    order_status_label: string;
+    delivery_status: string;
+    delivery_status_label: string;
     sold_at: string;
     order_items: OrderItem[];
     payments: Payment[];
@@ -53,10 +56,13 @@ const props = defineProps<{
     order: {
         data: Order
     };
+    orderStatuses: Record<string, string>;
+    deliveryStatuses: Record<string, string>;
 }>();
 
 const form = useForm({
     order_status: props.order.data.order_status,
+    delivery_status: props.order.data.delivery_status,
     notes: props.order.data.notes || '',
     _method: 'PUT',
 });
@@ -113,6 +119,18 @@ const submitForm = () => {
                 <span class="text-muted-foreground w-30">Date</span>
                 <span>: {{ order.data.sold_at }}</span>
             </p>
+
+            <!-- Current Status Display -->
+            <div class="mt-4 p-3 bg-gray-50 rounded border">
+                <p class="flex">
+                    <span class="text-muted-foreground w-30">Current Order Status</span>
+                    <span class="font-medium">: {{ order.data.order_status_label }}</span>
+                </p>
+                <p class="flex" v-if="order.data.delivery_status">
+                    <span class="text-muted-foreground w-30">Current Delivery Status</span>
+                    <span class="font-medium">: {{ order.data.delivery_status_label }}</span>
+                </p>
+            </div>
         </div>
 
         <div class="extras">
@@ -169,20 +187,42 @@ const submitForm = () => {
                 <Label for="order_status">Order Status</Label>
                 <Select v-model="form.order_status">
                     <SelectTrigger class="w-full">
-                        <SelectValue placeholder="Select status" />
+                        <SelectValue placeholder="Select order status" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectGroup>
-                            <SelectItem :value="null">None</SelectItem>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="processing">Processing</SelectItem>
-                            <SelectItem value="shipped">Shipped</SelectItem>
-                            <SelectItem value="delivered">Delivered</SelectItem>
-                            <SelectItem value="cancelled">Cancelled</SelectItem>
+                            <SelectItem 
+                                v-for="(label, value) in orderStatuses" 
+                                :key="value" 
+                                :value="value"
+                            >
+                                {{ label }}
+                            </SelectItem>
                         </SelectGroup>
                     </SelectContent>
                 </Select>
                 <InputError :message="form.errors.order_status" />
+            </div>
+            
+            <div class="inputs-group">
+                <Label for="delivery_status">Delivery Status</Label>
+                <Select v-model="form.delivery_status">
+                    <SelectTrigger class="w-full">
+                        <SelectValue placeholder="Select delivery status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            <SelectItem 
+                                v-for="(label, value) in deliveryStatuses" 
+                                :key="value" 
+                                :value="value"
+                            >
+                                {{ label }}
+                            </SelectItem>
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
+                <InputError :message="form.errors.delivery_status" />
             </div>
 
             <div class="inputs-group">

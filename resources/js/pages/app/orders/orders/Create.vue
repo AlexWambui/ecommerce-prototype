@@ -15,6 +15,8 @@ const { formatPrice } = usePriceFormatter();
 
 defineProps<{
     products: { data: Product[] };
+    orderStatuses: Record<string, string>;
+    deliveryStatuses: Record<string, string>;
 }>();
 
 // --- STATE ---
@@ -342,6 +344,12 @@ const submitOrder = () => {
                     <div class="flex justify-between text-sm"><span>Subtotal</span><span>{{ formatPrice(subtotal) }}</span></div>
                     <div class="flex justify-between text-sm"><span>Delivery</span><span>{{ formatPrice(deliveryCost) }}</span></div>
                     <div class="flex justify-between font-bold text-base border-t pt-1 mt-1"><span>Total</span><span>{{ formatPrice(total) }}</span></div>
+
+                    <!-- Show what statuses will be applied -->
+                    <div class="mt-2 pt-2 border-t text-xs text-gray-500">
+                        <p>Order will be: <span class="font-medium">{{ deliveryMethod === 'shop' ? 'Ready for Pickup' : 'Pending' }}</span></p>
+                        <p>Delivery: <span class="font-medium">Pending</span></p>
+                    </div>
                 </div>
 
                 <Button 

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->uuid()->unique();
             $table->string('order_number')->unique();
             $table->string('order_channel')->default('website');
+            $table->string('order_status')->default('pending')->comment('pending, confirmed, processing, ready_for_pickup, completed, cancelled, refunded'); // current status for quick access
 
             // Fiscals
             $table->string('currency', 3)->default('KES');
@@ -36,6 +37,7 @@ return new class extends Migration
             $table->string('delivery_area')->nullable();
             $table->string('delivery_address')->nullable();
             $table->string('tracking_number')->nullable();
+            $table->string('delivery_status')->nullable()->comment('pending, picked_up, in_transit, out_for_delivery, delivered, delivery_failed, returned');
 
             $table->text('additional_info')->nullable();
             $table->text('admin_notes')->nullable();
@@ -53,6 +55,8 @@ return new class extends Migration
             $table->string('shipping_address_snapshot')->nullable();
 
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('current_order_status_id')->nullable()->nullOnDelete();
+            $table->foreignId('current_delivery_status_id')->nullable()->nullOnDelete();
             $table->timestamp('sold_at');
             $table->timestamps();
             

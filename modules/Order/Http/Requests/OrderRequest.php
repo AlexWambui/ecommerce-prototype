@@ -4,6 +4,8 @@ namespace Modules\Order\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Modules\Order\Enums\OrderStatus;
+use Modules\Order\Enums\DeliveryStatus;
 
 class OrderRequest extends FormRequest
 {
