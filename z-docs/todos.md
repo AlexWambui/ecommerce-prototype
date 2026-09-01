@@ -33,3 +33,4 @@ General
 ❌ products: add logic for compressing images when adding new products
 ❌ products: add logic auto generating skus to make it easier to label shoes
 ✅ products: use stock count to activate or deactivate products that show on the home and pos pages
+❌ orders: use proper delivery locations and areas when creating an order
