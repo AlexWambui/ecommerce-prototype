@@ -31,7 +31,7 @@ const form = useForm({
     customer_phone: '',
     customer_email: '',
     delivery_method: 'shop',
-    order_channel: 'walk_in',
+    order_channel: 'pos',
     location: '',
     area: '',
     address: '',
@@ -123,9 +123,9 @@ const isAnonymous = ref(false);
 
 watch(isAnonymous, (val) => {
     if (val) {
-        form.customer_name = 'walk_in';
+        form.customer_name = 'Guest';
         form.customer_phone = 'na';
-        form.customer_email = '';
+        form.customer_email = 'guest@gmail.com';
     } else {
         form.customer_name = '';
         form.customer_phone = '';
@@ -225,6 +225,7 @@ const submitOrder = () => {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
+                                    <SelectItem value="pos">POS</SelectItem>
                                     <SelectItem value="walk_in">Walk In</SelectItem>
                                     <SelectItem value="whatsapp">WhatsApp</SelectItem>
                                     <SelectItem value="tiktok">TikTok</SelectItem>
