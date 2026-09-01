@@ -18,9 +18,12 @@ return new class extends Migration
             // Snapshot of product at time of purchase
             $table->string('product_name');
             $table->string('product_sku')->nullable();
+            $table->string('product_type')->default('goods'); // [goods, service]
 
-            $table->unsignedSmallInteger('quantity')->default(1);
-            $table->unsignedSmallInteger('returned_quantity')->default(0); // in case a shoe gets returned
+            // Used decimals in case of time-based items (e.g. 2.5 hours)
+            $table->decimal('quantity', 10, 2)->default(1.00);
+            $table->decimal('returned_quantity', 10, 2)->default(0.00); // in case a product gets returned
+
             $table->decimal('cost_price', 10, 2)->default(0);
             $table->decimal('selling_price', 10, 2)->default(0);
             $table->decimal('subtotal', 10, 2)->default(0);
@@ -29,8 +32,8 @@ return new class extends Migration
             $table->decimal('discount', 10, 2)->default(0);
             $table->decimal('total', 10, 2)->default(0);
 
-            $table->foreignId('order_id')->constrained()->onDelete('cascade');
-            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+            $table->foreignId('order_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('product_id')->nullable()->constrained('products')->nullOnDelete();
             
             $table->timestamps();
             

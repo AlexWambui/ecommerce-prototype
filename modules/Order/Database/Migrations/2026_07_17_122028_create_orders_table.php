@@ -55,8 +55,8 @@ return new class extends Migration
             $table->string('shipping_address_snapshot')->nullable();
 
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('current_order_status_id')->nullable()->nullOnDelete();
-            $table->foreignId('current_delivery_status_id')->nullable()->nullOnDelete();
+            $table->foreignId('current_order_status_id')->nullable()->constrained('order_statuses')->nullOnDelete();
+            $table->foreignId('current_delivery_status_id')->constrained('order_statuses')->nullable()->nullOnDelete();
             $table->timestamp('sold_at');
             $table->timestamps();
             
