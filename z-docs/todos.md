@@ -15,7 +15,7 @@ Sellers
 
 ✅ sellers can CRUDS products
 ✅ sellers can CRUDS product categories
-✅ sellers can CRUDS brands
+❌ sellers can CRUDS brands
 ✅ sellers can CRUDS delivery locations and areas with prices
 ⚠️ sellers can CRUDS orders
 ⚠️ sellers can CRUDS expenses to help accurately calculate profits they've made
