@@ -219,7 +219,7 @@ class OrderController extends Controller
 
         try {
             // Update order status if provided
-            if (isset($validated['order_status'])) {
+            if (isset($validated['order_status']) && $validated['order_status'] !== $order->order_status->value) {
                 $status = OrderStatusEnum::from($validated['order_status']);
                 $order->updateOrderStatus(
                     $status,
@@ -230,7 +230,7 @@ class OrderController extends Controller
             }
 
             // Update delivery status if provided
-            if (isset($validated['delivery_status'])) {
+            if (isset($validated['delivery_status']) && $validated['delivery_status'] !== $order->delivery_status->value) {
                 $status = DeliveryStatusEnum::from($validated['delivery_status']);
                 $order->updateDeliveryStatus(
                     $status,

@@ -56,7 +56,7 @@ class DashboardController extends Controller
                     'total_product_categories' => ProductCategory::count(),
 
                     'total_orders' => Order::count(),
-                    'orders_need_attention' => Order::where('order_status', OrderStatusEnum::PENDING->value)->whereColumn('amount_paid', '>=', 'total_selling_price')->count(),
+                    'orders_need_attention' => Order::needsAttention()->count(),
 
                     'total_delivery_locations' => DeliveryLocation::count(),
                     'total_delivery_areas' => DeliveryArea::count(),

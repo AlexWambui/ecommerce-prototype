@@ -188,6 +188,7 @@ class Order extends Model
             'returned' => [
                 'refunded',         // Process refund for returned items
                 'completed',        // Return processed but no refund
+                'processing',
             ],
         ];
     }
@@ -391,8 +392,38 @@ class Order extends Model
 
     public function scopeNeedsAttention($query)
     {
-        return $query->where('order_status', OrderStatusEnum::PENDING->value)
-            ->whereColumn('amount_paid', '>=', 'total_selling_price');
+        return $query->where(function ($q) {
+            // CASE 1: Active orders that are NOT safely with courier
+            $q->where(function ($sub) {
+                $sub->whereNotIn('order_status', [
+                    OrderStatusEnum::COMPLETED->value,
+                    OrderStatusEnum::CANCELLED->value,
+                    OrderStatusEnum::REFUNDED->value,
+                ])
+                ->whereNotIn('delivery_status', [
+                    DeliveryStatusEnum::PICKED_UP->value,
+                    DeliveryStatusEnum::IN_TRANSIT->value,
+                    DeliveryStatusEnum::OUT_FOR_DELIVERY->value,
+                ]);
+            });
+            
+            // CASE 2: Payment issues (partial or unpaid)
+            $q->orWhere(function ($sub) {
+                $sub->whereColumn('amount_paid', '<', 'total_selling_price');
+            });
+            
+            // CASE 3: Delivery failures (stolen, lost, etc.)
+            $q->orWhere('delivery_status', DeliveryStatusEnum::DELIVERY_FAILED->value);
+            
+            // CASE 4: Returns (need processing)
+            $q->orWhere('order_status', OrderStatusEnum::RETURNED->value);
+            
+            // CASE 5: Cancelled but not refunded
+            $q->orWhere(function ($sub) {
+                $sub->where('order_status', OrderStatusEnum::CANCELLED->value)
+                    ->where('amount_paid', '>', 0);
+            });
+        });
     }
 
     public function scopePartiallyPaid($query)

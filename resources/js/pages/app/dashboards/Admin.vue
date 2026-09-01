@@ -55,7 +55,7 @@ defineProps<Props>();
                 <DashboardStat :stat="stats.total_orders" label="Orders">
                     <template #extras>
                         <span class="text-sm text-muted-foreground">
-                            {{ stats.orders_need_attention }} need attention
+                            {{ stats.orders_need_attention }} needs attention
                         </span>
                     </template>
                 </DashboardStat>
