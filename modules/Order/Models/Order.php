@@ -46,16 +46,6 @@ class Order extends Model
         return $this->hasMany(OrderStatus::class, 'order_id');
     }
 
-    public function currentOrderStatus(): BelongsTo
-    {
-        return $this->belongsTo(OrderStatus::class, 'current_order_status_id');
-    }
-
-    public function currentDeliveryStatus(): BelongsTo
-    {
-        return $this->belongsTo(OrderStatus::class, 'current_delivery_status_id');
-    }
-
     public function updateOrderStatus(OrderStatusEnum $status, ?string $notes = null, ?array $metadata = null, ?int $userId = null): OrderStatus
     {
         // Validate transition
@@ -75,7 +65,6 @@ class Order extends Model
 
         $this->update([
             'order_status' => $status->value,
-            'current_order_status_id' => $statusRecord->id,
         ]);
 
         return $statusRecord;
@@ -100,7 +89,6 @@ class Order extends Model
 
         $this->update([
             'delivery_status' => $status->value,
-            'current_delivery_status_id' => $statusRecord->id,
         ]);
 
         return $statusRecord;

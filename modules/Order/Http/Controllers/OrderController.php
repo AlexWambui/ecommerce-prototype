@@ -120,12 +120,6 @@ class OrderController extends Controller
                 'changed_at' => now(),
             ]);
 
-            // Update order with current status IDs
-            $order->update([
-                'current_order_status_id' => $orderStatus->id,
-                'current_delivery_status_id' => $deliveryStatus->id,
-            ]);
-
             // --- CREATE ORDER ITEMS (Loop through cart) ---
             foreach ($validated['cart_items'] as $item) {
                 $product = Product::find($item['id']);
