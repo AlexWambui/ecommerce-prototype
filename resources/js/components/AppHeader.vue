@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, LayoutGrid, Menu, Users, PhoneCall, Barcode, TruckElectric, Clipboard } from '@lucide/vue';
+import { BookOpen, LayoutGrid, Menu, Users, PhoneCall, Barcode, TruckElectric, Clipboard, BanknoteArrowDown } from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
@@ -18,6 +18,7 @@ import { toUrl } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import contactMessageRoutes from '@/routes/contact-messages';
 import deliveryRoutes from '@/routes/delivery-locations';
+import expenseRoutes from '@/routes/expenses';
 import orderRoutes from '@/routes/orders';
 import productRoutes from '@/routes/products';
 import userRoutes from '@/routes/users';
@@ -62,6 +63,11 @@ const mainNavItems = computed(() => {
                 title: 'Products',
                 href: productRoutes.index(),
                 icon: Barcode,
+            },
+            {
+                title: 'Expenses',
+                href: expenseRoutes.index(),
+                icon: BanknoteArrowDown,
             },
             {
                 title: 'Deliveries',

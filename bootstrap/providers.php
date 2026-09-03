@@ -13,4 +13,5 @@ return [
     \Modules\Delivery\Providers\DeliveryServiceProvider::class,
     \Modules\Order\Providers\OrderServiceProvider::class,
     \Modules\Payment\Providers\PaymentServiceProvider::class,
+    \Modules\Expense\Providers\ExpenseServiceProvider::class,
 ];
