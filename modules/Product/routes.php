@@ -19,7 +19,7 @@ Route::middleware('role:admin,super_admin,cashier')->group(function ()
         ->controller(ProductCategoryController::class)
         ->group(function ()
     {
-        Route::get('/', [ProductCategoryController::class, 'index'])->name('index');
+        Route::get('/', 'index')->name('index');
     });
 });
 
@@ -43,11 +43,11 @@ Route::middleware('role:admin,super_admin')->group(function ()
         ->controller(ProductCategoryController::class)
         ->group(function ()
     {
-        Route::get('/create', [ProductCategoryController::class, 'create'])->name('create');
-        Route::post('/', [ProductCategoryController::class, 'store'])->name('store');
-        Route::get('/{product_category}/edit', [ProductCategoryController::class, 'edit'])->name('edit');
-        Route::put('/{product_category}', [ProductCategoryController::class, 'update'])->name('update');
-        Route::delete('/{product_category}', [ProductCategoryController::class, 'destroy'])->name('destroy');
+        Route::get('/create', 'create')->name('create');
+        Route::post('/', 'store')->name('store');
+        Route::get('/{product_category}/edit', 'edit')->name('edit');
+        Route::put('/{product_category}', 'update')->name('update');
+        Route::delete('/{product_category}', 'destroy')->name('destroy');
     });
 });
 
