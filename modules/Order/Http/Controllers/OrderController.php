@@ -151,6 +151,7 @@ class OrderController extends Controller
                         'transaction_reference' => null, // Handled manually for walk-in
                         'amount' => $paymentData['amount'],
                         'payment_status' => 'paid',
+                        'paid_at' => now()
                     ]);
                 }
             }
