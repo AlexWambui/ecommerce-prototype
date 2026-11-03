@@ -4,20 +4,20 @@ namespace Modules\Guest\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Inertia\Inertia;
-use Modules\Product\Models\Product;
 use Modules\Product\Http\Resources\ProductHomePageResource;
+use Modules\Product\Models\Product;
 
 class HomePageController extends Controller
 {
     public function index()
     {
         $new_arrivals = Product::where('is_new', true)->where('is_active', true)->with('images')->limit(4)->get();
-        
+
         $most_popular = $this->getMostPopularProducts();
 
         return Inertia::render('guest/homepage/Index', [
             'new_arrivals' => ProductHomePageResource::collection($new_arrivals)->resolve(),
-            'most_popular' => ProductHomePageResource::collection($most_popular)->resolve()
+            'most_popular' => ProductHomePageResource::collection($most_popular)->resolve(),
         ]);
     }
 
@@ -37,7 +37,7 @@ class HomePageController extends Controller
 
         // If we have less than 4 featured, get the remaining from random products
         $needed = 4 - $featured->count();
-        
+
         $random = Product::where('is_active', true)
             ->where('is_featured', false) // Exclude featured products
             ->whereNotIn('id', $featured->pluck('id')) // Exclude already selected

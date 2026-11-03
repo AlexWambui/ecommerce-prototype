@@ -38,10 +38,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
 import { router } from '@inertiajs/vue3'
-import GuestLayout from '@/Layouts/GuestLayout.vue'
+import { ref } from 'vue'
 import { useToast } from '@/Composables/useToast'
+import GuestLayout from '@/Layouts/GuestLayout.vue'
 
 const props = defineProps({
   cart: {

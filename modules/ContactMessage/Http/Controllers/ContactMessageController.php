@@ -3,13 +3,13 @@
 namespace Modules\ContactMessage\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Exception;
-use Modules\ContactMessage\Models\ContactMessage;
-use Modules\ContactMessage\Http\Resources\ContactMessageResource;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 use Modules\ContactMessage\Http\Resources\ContactMessageEditPageResource;
+use Modules\ContactMessage\Http\Resources\ContactMessageResource;
+use Modules\ContactMessage\Models\ContactMessage;
 
 class ContactMessageController extends Controller
 {
@@ -53,14 +53,14 @@ class ContactMessageController extends Controller
             ContactMessage::create([
                 'name' => $request->name,
                 'phone_number' => $request->phone_number,
-                'message' => $request->message
+                'message' => $request->message,
             ]);
 
             DB::commit();
 
             Inertia::flash('toast', [
-                'type' => "success",
-                'message' => "Your callback has been requested. We will contact you shortly!"
+                'type' => 'success',
+                'message' => 'Your callback has been requested. We will contact you shortly!',
             ]);
 
             return to_route('contact-messages.create');
@@ -68,8 +68,8 @@ class ContactMessageController extends Controller
             DB::rollback();
 
             Inertia::flash('toast', [
-                'type' => "error",
-                'message' => "Failed to save category: {$e->getMessage()}"
+                'type' => 'error',
+                'message' => "Failed to save category: {$e->getMessage()}",
             ]);
 
             return back()->withInput();
@@ -78,12 +78,12 @@ class ContactMessageController extends Controller
 
     public function edit(ContactMessage $contact_message)
     {
-        if (!$contact_message->is_read) {
+        if (! $contact_message->is_read) {
             $contact_message->update(['is_read' => true]);
         }
 
         return inertia('app/contact/Edit', [
-            'contact_message' => new ContactMessageEditPageResource($contact_message)
+            'contact_message' => new ContactMessageEditPageResource($contact_message),
         ]);
     }
 
@@ -94,26 +94,26 @@ class ContactMessageController extends Controller
 
             // Toggle the resolved status
             $contact_message->update([
-                'is_resolved' => !$contact_message->is_resolved
+                'is_resolved' => ! $contact_message->is_resolved,
             ]);
 
             DB::commit();
 
             $status = $contact_message->is_resolved ? 'resolved' : 'unresolved';
-            
+
             session()->flash('toast', [
                 'type' => 'success',
-                'message' => "Contact message marked as {$status}!"
+                'message' => "Contact message marked as {$status}!",
             ]);
 
             return back();
-            
+
         } catch (Exception $e) {
             DB::rollback();
 
             session()->flash('toast', [
                 'type' => 'error',
-                'message' => "Failed to update status: {$e->getMessage()}"
+                'message' => "Failed to update status: {$e->getMessage()}",
             ]);
 
             return back();
@@ -131,17 +131,17 @@ class ContactMessageController extends Controller
 
             session()->flash('toast', [
                 'type' => 'success',
-                'message' => 'Contact message deleted successfully!'
+                'message' => 'Contact message deleted successfully!',
             ]);
 
             return to_route('contact-messages.index');
-            
+
         } catch (Exception $e) {
             DB::rollback();
 
             session()->flash('toast', [
                 'type' => 'error',
-                'message' => "Failed to delete message: {$e->getMessage()}"
+                'message' => "Failed to delete message: {$e->getMessage()}",
             ]);
 
             return back();

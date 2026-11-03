@@ -30,11 +30,11 @@ class UserRequest extends FormRequest
         $rules = [
             'name' => ['required', 'string', 'max:200'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user?->id)],
-            'role' => ['required', 'integer', 'in:' . implode(',', array_column(UserRoles::cases(), 'value'))],
-            'status' => ['required', 'integer', 'in:' . implode(',', array_column(UserStatuses::cases(), 'value'))],
+            'role' => ['required', 'integer', 'in:'.implode(',', array_column(UserRoles::cases(), 'value'))],
+            'status' => ['required', 'integer', 'in:'.implode(',', array_column(UserStatuses::cases(), 'value'))],
         ];
 
-        if (!$user || $this->filled('password')) {
+        if (! $user || $this->filled('password')) {
             $rules['password'] = ['required', 'string', 'min:8', 'confirmed'];
         }
 

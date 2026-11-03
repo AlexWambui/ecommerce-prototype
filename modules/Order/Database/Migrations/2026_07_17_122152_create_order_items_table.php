@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('order_items', function (Blueprint $table) {
             $table->id();
             $table->uuid()->unique();
-            
+
             // Snapshot of product at time of purchase
             $table->string('product_name');
             $table->string('product_sku')->nullable();
@@ -34,9 +34,9 @@ return new class extends Migration
 
             $table->foreignId('order_id')->constrained()->cascadeOnDelete();
             $table->foreignId('product_id')->nullable()->constrained('products')->nullOnDelete();
-            
+
             $table->timestamps();
-            
+
             $table->index('order_id');
             $table->index('product_id');
         });

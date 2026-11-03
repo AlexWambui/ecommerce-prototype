@@ -3,7 +3,6 @@
 namespace Modules\Expense\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class ExpenseRequest extends FormRequest
 {

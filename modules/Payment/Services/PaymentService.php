@@ -2,10 +2,10 @@
 
 namespace Modules\Payment\Services;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Modules\Order\Models\Order;
 use Modules\Payment\Models\Payment;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB;
 
 class PaymentService
 {
@@ -42,7 +42,7 @@ class PaymentService
     {
         DB::transaction(function () use ($payment) {
             $payment->markAsCompleted();
-            
+
             // Update order status
             $order = $payment->order;
             $order->markAsPaid();
@@ -56,7 +56,7 @@ class PaymentService
     {
         DB::transaction(function () use ($payment, $reason) {
             $payment->markAsFailed($reason);
-            
+
             // Update order status
             $order = $payment->order;
             $order->update(['status' => 'failed']);
@@ -71,7 +71,7 @@ class PaymentService
     {
         DB::transaction(function () use ($payment, $amount) {
             $payment->refund($amount);
-            
+
             // Update order status
             $order = $payment->order;
             $order->update(['status' => 'refunded']);
@@ -84,7 +84,7 @@ class PaymentService
      */
     protected function generateTransactionId(): string
     {
-        return 'TXN' . Str::upper(Str::random(12));
+        return 'TXN'.Str::upper(Str::random(12));
     }
 
     /**
@@ -94,7 +94,7 @@ class PaymentService
     {
         // This would contain provider-specific validation logic
         // For example, verifying Stripe signatures or M-Pesa security
-        
+
         return true;
     }
 

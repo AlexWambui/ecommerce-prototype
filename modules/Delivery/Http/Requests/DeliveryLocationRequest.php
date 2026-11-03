@@ -28,7 +28,7 @@ class DeliveryLocationRequest extends FormRequest
                 'required',
                 'string',
                 'max:100',
-                Rule::unique('delivery_locations', 'name')->ignore($this->route('delivery_location'))
+                Rule::unique('delivery_locations', 'name')->ignore($this->route('delivery_location')),
             ],
             'is_active' => ['boolean'],
             'sort_order' => ['nullable', 'integer', 'min:0'],

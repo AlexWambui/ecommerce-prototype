@@ -30,7 +30,7 @@ class DeliveryAreaRequest extends FormRequest
                 'max:100',
                 Rule::unique('delivery_areas', 'name')
                     ->where('delivery_location_id', $this->delivery_location_id)
-                    ->ignore($this->route('delivery_area'))
+                    ->ignore($this->route('delivery_area')),
             ],
             'price' => ['required', 'numeric', 'min:0', 'decimal:0,2'],
             'estimated_days' => ['required', 'integer', 'min:1'],
@@ -53,11 +53,11 @@ class DeliveryAreaRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        if (!$this->has('sort_order')) {
+        if (! $this->has('sort_order')) {
             $this->merge(['sort_order' => 0]);
         }
 
-        if (!$this->has('is_active')) {
+        if (! $this->has('is_active')) {
             $this->merge(['is_active' => true]);
         }
     }

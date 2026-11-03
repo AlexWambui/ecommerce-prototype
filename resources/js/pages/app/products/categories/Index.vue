@@ -10,8 +10,12 @@ import ProductsNav from '../components/ProductsNav.vue';
 
 interface ProductCategory {
     id: number;
+    uuid: string;
     name: string;
     slug: string;
+    is_active: boolean;
+    image_url: string;
+    products_count: number;
 };
 
 interface Props {
@@ -39,7 +43,7 @@ const handleSearch = (value: string) => {
     <ProductsNav current-page="product-categories" />
 
     <AppPageHeader
-        resourceName="Product Categories"
+        resourceName="Categories"
         v-model="search"
         search-placeholder="Search by name..."
         create-url="/product-categories/create"
@@ -52,8 +56,10 @@ const handleSearch = (value: string) => {
             <TableHeader>
                 <TableRow>
                     <TableHead class="id">#</TableHead>
+                    <TableHead>Image</TableHead>
                     <TableHead>Name</TableHead>
-                    <TableHead>Slug</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Products</TableHead>
                     <TableHead class="actions">Actions</TableHead>
                 </TableRow>
             </TableHeader>
@@ -61,15 +67,22 @@ const handleSearch = (value: string) => {
             <TableBody>
                 <TableRow v-for="(category, index) in props.categories" :key="category.id">
                     <TableCell class="id">{{ index + 1 }}</TableCell>
+                    <TableCell class="w-20">
+                        <img :src="category.image_url" :alt="category.slug">
+                    </TableCell>
                     <TableCell>{{ category.name }}</TableCell>
-                    <TableCell>{{ category.slug }}</TableCell>
+                    <TableCell>
+                        <span v-if="category.is_active" class="bg-green-200 text-green-900 py-1 px-2 rounded-full text-sm font-bold">Active</span>
+                        <span v-else class="bg-red-200 text-red-900 py-1 px-2 rounded-full text-sm font-bold">Inactive</span>
+                    </TableCell>
+                    <TableCell>{{ category.products_count }}</TableCell>
                     <TableCell class="actions">
                         <div class="actions-wrapper">
-                            <Link :href="productCategoryRoutes.edit(category.id).url" class="action edit">
+                            <Link :href="productCategoryRoutes.edit(category.uuid).url" class="action edit">
                                 <Pencil />
                             </Link>
                             <span class="divider">|</span>
-                            <DeleteConfirmationDialog :url="productCategoryRoutes.destroy(category.id).url" title="Delete Category?" description="This category will be deleted permanently!" confirm-text="Delete Category">
+                            <DeleteConfirmationDialog :url="productCategoryRoutes.destroy(category.uuid).url" title="Delete Category?" description="This category will be deleted permanently!" confirm-text="Delete Category">
                                 <template #trigger>
                                     <button class="action delete">
                                         <Trash2 />

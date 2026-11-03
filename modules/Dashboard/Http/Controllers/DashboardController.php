@@ -4,15 +4,15 @@ namespace Modules\Dashboard\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Modules\User\Enums\UserRoles;
-use Modules\User\Models\User;
-use Modules\Product\Models\Product;
-use Modules\Product\Models\ProductCategory;
-use Modules\Delivery\Models\DeliveryLocation;
-use Modules\Delivery\Models\DeliveryArea;
 use Modules\ContactMessage\Models\ContactMessage;
+use Modules\Delivery\Models\DeliveryArea;
+use Modules\Delivery\Models\DeliveryLocation;
 use Modules\Order\Enums\OrderStatusEnum;
 use Modules\Order\Models\Order;
+use Modules\Product\Models\Product;
+use Modules\Product\Models\ProductCategory;
+use Modules\User\Enums\UserRoles;
+use Modules\User\Models\User;
 
 class DashboardController extends Controller
 {
@@ -40,7 +40,7 @@ class DashboardController extends Controller
 
                     'total_callbacks' => ContactMessage::count(),
                     'total_unread_callbacks' => ContactMessage::where('is_read', false)->count(),
-                ]
+                ],
             ]);
         }
 
@@ -63,7 +63,7 @@ class DashboardController extends Controller
 
                     'total_callbacks' => ContactMessage::count(),
                     'total_unread_callbacks' => ContactMessage::where('is_read', false)->count(),
-                ]
+                ],
             ]);
         }
 
@@ -73,7 +73,7 @@ class DashboardController extends Controller
                 'stats' => [
                     'total_products' => Product::where('is_active', true)->count(),
                     'total_product_categories' => ProductCategory::where('is_active', true)->count(),
-                ]
+                ],
             ]);
         }
 
@@ -94,9 +94,10 @@ class DashboardController extends Controller
 
             return inertia('app/dashboards/Customer', [
                 'user' => $user,
-                'stats' => $stats
+                'stats' => $stats,
             ]);
         }
+
         return inertia('app/dashboards/Dashboard');
     }
 }

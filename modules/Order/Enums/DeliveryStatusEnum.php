@@ -11,10 +11,10 @@ enum DeliveryStatusEnum: string
     case DELIVERED = 'delivered';
     case DELIVERY_FAILED = 'delivery_failed';
     case RETURNED = 'returned';
-    
+
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::PENDING => 'Pending',
             self::PICKED_UP => 'Picked Up',
             self::IN_TRANSIT => 'In Transit',
@@ -29,7 +29,7 @@ enum DeliveryStatusEnum: string
     {
         $labels = [];
 
-        foreach(self::cases() as $status) {
+        foreach (self::cases() as $status) {
             $labels[$status->value] = $status->label();
         }
 
@@ -41,7 +41,6 @@ enum DeliveryStatusEnum: string
         return array_column(self::cases(), 'value');
     }
 
-    
     public static function fromLabel(string $label): ?self
     {
         foreach (self::cases() as $case) {
@@ -49,6 +48,7 @@ enum DeliveryStatusEnum: string
                 return $case;
             }
         }
+
         return null;
     }
 

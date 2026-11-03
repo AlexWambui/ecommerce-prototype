@@ -5,8 +5,8 @@ namespace Database\Seeders;
 // use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Modules\User\Database\Seeders\UserSeeder;
 use Modules\Expense\Database\Seeders\ExpenseCategorySeeder;
+use Modules\User\Database\Seeders\UserSeeder;
 
 class DatabaseSeeder extends Seeder
 {

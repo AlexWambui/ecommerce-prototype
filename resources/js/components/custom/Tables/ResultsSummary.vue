@@ -25,6 +25,7 @@ const displayRange = computed(() => {
     const { current_page, per_page, total } = props.meta;
     const start = (current_page - 1) * per_page + 1;
     const end = Math.min(current_page * per_page, total);
+
     return { start, end, total };
 });
 

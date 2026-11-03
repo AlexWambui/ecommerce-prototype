@@ -2,10 +2,10 @@
 
 namespace Modules\Expense\Models;
 
+use App\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\User\Models\User;
-use App\Concerns\HasUuid;
 
 class Expense extends Model
 {
@@ -49,7 +49,7 @@ class Expense extends Model
             return $query;
         }
 
-        $search_term = '%' . strtolower($search) . '%';
+        $search_term = '%'.strtolower($search).'%';
 
         return $query->where(function ($q) use ($search_term) {
             $q->whereRaw('LOWER(description) LIKE ?', [$search_term])

@@ -3,20 +3,20 @@
 namespace Modules\Delivery\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
-use Exception;
-use Modules\Delivery\Models\DeliveryLocation;
-use Modules\Delivery\Models\DeliveryArea;
 use Modules\Delivery\Http\Requests\DeliveryAreaRequest;
 use Modules\Delivery\Http\Resources\DeliveryAreaResource;
+use Modules\Delivery\Models\DeliveryArea;
+use Modules\Delivery\Models\DeliveryLocation;
 
 class DeliveryAreaController extends Controller
 {
     public function create(DeliveryLocation $delivery_location)
     {
         return inertia('app/deliveries/areas/Create', [
-            'delivery_location' => $delivery_location
+            'delivery_location' => $delivery_location,
         ]);
     }
 
@@ -31,7 +31,7 @@ class DeliveryAreaController extends Controller
 
             Inertia::flash('toast', [
                 'type' => 'success',
-                'message' => "Area created successfully"
+                'message' => 'Area created successfully',
             ]);
 
             return to_route('delivery-locations.show', $delivery_location);
@@ -40,7 +40,7 @@ class DeliveryAreaController extends Controller
 
             Inertia::flash('toast', [
                 'type' => 'error',
-                'message' => "Failed to create area: {$e->getMessage()}"
+                'message' => "Failed to create area: {$e->getMessage()}",
             ]);
 
             return back()->withInput();
@@ -51,7 +51,7 @@ class DeliveryAreaController extends Controller
     {
         return inertia('app/deliveries/areas/Edit', [
             'delivery_area' => $delivery_area,
-            'delivery_location' => $delivery_location
+            'delivery_location' => $delivery_location,
         ]);
     }
 
@@ -66,7 +66,7 @@ class DeliveryAreaController extends Controller
 
             Inertia::flash('toast', [
                 'type' => 'success',
-                'message' => "Area updated successfully"
+                'message' => 'Area updated successfully',
             ]);
 
             return to_route('delivery-locations.show', $delivery_location->uuid);
@@ -75,7 +75,7 @@ class DeliveryAreaController extends Controller
 
             Inertia::flash('toast', [
                 'type' => 'error',
-                'message' => "Failed to update area: {$e->getMessage()}"
+                'message' => "Failed to update area: {$e->getMessage()}",
             ]);
 
             return back()->withInput();
@@ -89,14 +89,14 @@ class DeliveryAreaController extends Controller
 
             Inertia::flash('toast', [
                 'type' => 'success',
-                'message' => "Area deleted successfully"
+                'message' => 'Area deleted successfully',
             ]);
 
             return back();
         } catch (Exception $e) {
             Inertia::flash('toast', [
                 'type' => 'error',
-                'message' => "Failed to delete area: {$e->getMessage()}"
+                'message' => "Failed to delete area: {$e->getMessage()}",
             ]);
 
             return back()->withInput();

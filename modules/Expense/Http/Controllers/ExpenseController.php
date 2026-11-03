@@ -3,15 +3,15 @@
 namespace Modules\Expense\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
-use Modules\Expense\Models\Expense;
-use Modules\Expense\Models\ExpenseCategory;
 use Modules\Expense\Http\Requests\ExpenseRequest;
 use Modules\Expense\Http\Resources\ExpenseResource;
-use Exception;
+use Modules\Expense\Models\Expense;
+use Modules\Expense\Models\ExpenseCategory;
 
 class ExpenseController extends Controller
 {
@@ -100,7 +100,7 @@ class ExpenseController extends Controller
 
             Inertia::flash('toast', [
                 'type' => 'error',
-                'message' => 'Failed to record expense: ' . $e->getMessage(),
+                'message' => 'Failed to record expense: '.$e->getMessage(),
             ]);
 
             return back()->withErrors(['error' => $e->getMessage()]);
@@ -142,7 +142,7 @@ class ExpenseController extends Controller
 
             Inertia::flash('toast', [
                 'type' => 'error',
-                'message' => 'Failed to update expense: ' . $e->getMessage(),
+                'message' => 'Failed to update expense: '.$e->getMessage(),
             ]);
 
             return back()->withErrors(['error' => $e->getMessage()]);
@@ -170,7 +170,7 @@ class ExpenseController extends Controller
 
             Inertia::flash('toast', [
                 'type' => 'error',
-                'message' => 'Failed to delete expense: ' . $e->getMessage(),
+                'message' => 'Failed to delete expense: '.$e->getMessage(),
             ]);
 
             return back()->withErrors(['error' => $e->getMessage()]);
@@ -203,7 +203,7 @@ class ExpenseController extends Controller
 
             Inertia::flash('toast', [
                 'type' => 'error',
-                'message' => 'Failed to delete expenses: ' . $e->getMessage(),
+                'message' => 'Failed to delete expenses: '.$e->getMessage(),
             ]);
 
             return back()->withErrors(['error' => $e->getMessage()]);

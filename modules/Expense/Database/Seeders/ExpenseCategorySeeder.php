@@ -3,8 +3,8 @@
 namespace Modules\Expense\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\Expense\Models\ExpenseCategory;
 use Illuminate\Support\Str;
+use Modules\Expense\Models\ExpenseCategory;
 
 class ExpenseCategorySeeder extends Seeder
 {

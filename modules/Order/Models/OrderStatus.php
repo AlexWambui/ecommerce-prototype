@@ -2,10 +2,10 @@
 
 namespace Modules\Order\Models;
 
+use App\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\User\Models\User;
-use App\Concerns\HasUuid;
 
 class OrderStatus extends Model
 {

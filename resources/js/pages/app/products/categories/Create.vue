@@ -1,23 +1,16 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { ImagePlus, X } from '@lucide/vue';
+import { ref } from 'vue';
+import FormHeader from '@/components/custom/FormHeader.vue';
 import InputError from '@/components/InputError.vue';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import FormHeader from '@/components/custom/FormHeader.vue';
+import { Textarea } from '@/components/ui/textarea';
 import productCategoryRoutes from '@/routes/product-categories';
-
-defineOptions({
-    layout: {
-        title: 'Create Product Category',
-        description: 'Add a new product category',
-    },
-});
 
 const categoryPreview = ref<string | null>(null);
 const categoryImage = ref<File | null>(null);
@@ -25,6 +18,7 @@ const categoryImage = ref<File | null>(null);
 const handleCategoryImageChange = (e: Event) => {
     const target = e.target as HTMLInputElement;
     const file = target.files?.[0];
+
     if (file) {
         categoryImage.value = file;
         categoryPreview.value = URL.createObjectURL(file);
@@ -33,6 +27,7 @@ const handleCategoryImageChange = (e: Event) => {
 
 const removeCategoryImage = () => {
     categoryImage.value = null;
+
     if (categoryPreview.value) {
         URL.revokeObjectURL(categoryPreview.value);
         categoryPreview.value = null;
@@ -41,10 +36,10 @@ const removeCategoryImage = () => {
 </script>
 
 <template>
-    <Head title="Create Product Category" />
+    <Head title="Create Category" />
 
     <div class="form">
-        <FormHeader :backUrl="productCategoryRoutes.index().url" title="Create Product Category" />
+        <FormHeader :backUrl="productCategoryRoutes.index().url" title="Create Category" />
 
         <Form :action="productCategoryRoutes.store.url()" method="post" v-slot="{ errors, processing }">
             <div class="inputs-group-wrapper">
@@ -57,6 +52,7 @@ const removeCategoryImage = () => {
                         autocomplete="name"
                         name="name"
                         placeholder="Category name"
+                        :tabindex="1"
                     />
                     <InputError :message="errors.name" />
                 </div>
@@ -68,17 +64,28 @@ const removeCategoryImage = () => {
                     id="description"
                     name="description"
                     rows="4"
-                    placeholder="Describe your product category..."
+                    placeholder="Describe the category..."
+                    :tabindex="2"
                 />
                 <InputError :message="errors.description" />
             </div>
 
+            <div class="inputs-group">
+                <div class="flex items-center justify-between">
+                    <Label for="is_active" class="flex items-center space-x-3">
+                        <Checkbox id="is_active" name="is_active" :default-value="true" :tabindex="3" />
+                        <span>Active</span>
+                    </Label>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Inactive categories won't be visible to customers</p>
+            </div>
+
             <div class="inputs-group-wrapper">
                 <div class="inputs-group">
-                    <Label for="category_image">Category Image</Label>
+                    <Label for="image">Category Image</Label>
                     <div class="relative w-40 h-40">
                         <div class="w-40 h-40 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50">
-                            <img v-if="categoryPreview" :src="categoryPreview" class="w-full h-full object-cover" />
+                            <img v-if="categoryPreview" :src="categoryPreview" class="w-full h-full object-contain" />
                             <div v-else class="text-center">
                                 <ImagePlus class="w-10 h-10 text-gray-400 mx-auto mb-2" />
                                 <p class="text-sm text-gray-500">Click to upload category image</p>
@@ -93,10 +100,10 @@ const removeCategoryImage = () => {
                             <X class="w-3 h-3" />
                         </button>
                         <label class="absolute inset-0 cursor-pointer">
-                            <input type="file" name="category_image" accept="image/*" class="hidden" @change="handleCategoryImageChange" />
+                            <input type="file" name="image" accept="image/*" class="hidden" @change="handleCategoryImageChange" />
                         </label>
                     </div>
-                    <InputError :message="errors.category_image" />
+                    <InputError :message="errors.image" />
                 </div>
             </div>
 

@@ -5,9 +5,9 @@ namespace Modules\Guest\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Modules\Product\Http\Resources\ProductIndexPageResource;
 use Modules\Product\Models\Product;
 use Modules\Product\Models\ProductCategory;
-use Modules\Product\Http\Resources\ProductIndexPageResource;
 
 class ShopPageController extends Controller
 {
@@ -19,7 +19,7 @@ class ShopPageController extends Controller
             ->with('images')
             ->orderBy('name')
             ->paginate(30);
-        
+
         $product_categories = ProductCategory::query()
             ->where('is_active', true)
             ->orderBy('name')
@@ -31,7 +31,7 @@ class ShopPageController extends Controller
             'product_categories' => $product_categories,
             'filters' => [
                 'search' => $request->search,
-            ]
+            ],
         ]);
     }
 }

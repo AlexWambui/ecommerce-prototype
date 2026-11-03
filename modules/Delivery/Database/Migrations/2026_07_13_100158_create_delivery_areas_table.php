@@ -20,7 +20,7 @@ return new class extends Migration
             $table->integer('estimated_days')->default(2);
             $table->boolean('is_active')->default(true);
             $table->integer('sort_order')->default(0);
-            
+
             $table->foreignId('delivery_location_id')->constrained('delivery_locations')->cascadeOnDelete();
             $table->timestamps();
 

@@ -12,22 +12,35 @@ class ProductHomePageResource extends JsonResource
      *
      * @return array<string, mixed>
      */
-
     public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
-            'price' => $this->price,
-            'stock' => 30,
             'sku' => $this->sku,
+
+            'price' => $this->price,
+
+            'current_stock' => (float) $this->current_stock,
+
             'category_name' => $this->category_name,
-            'description' => $this->description,
+            'brand_name' => $this->brand_name,
+
             'is_new' => (bool) $this->is_new,
             'is_featured' => (bool) $this->is_featured,
             'is_active' => (bool) $this->is_active,
-            'thumbnail_url' => $this->thumbnail_url
+
+            'images' => $this->whenLoaded('images', function () {
+                return $this->images->map(function ($image) {
+                    return [
+                        'url' => $image->image_url,        // full size
+                        'card_url' => $image->card_url,    // medium
+                        'thumb_url' => $image->thumbnail_url, // small
+                        'alt' => $this->slug,
+                    ];
+                })->values()->toArray();
+            }, []),
         ];
     }
 }

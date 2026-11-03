@@ -2,16 +2,16 @@
 
 namespace Modules\Order\Models;
 
+use App\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
-use Modules\User\Models\User;
-use Modules\Payment\Models\Payment;
-use App\Concerns\HasUuid;
-use Modules\Order\Enums\OrderStatusEnum;
 use Modules\Order\Enums\DeliveryStatusEnum;
+use Modules\Order\Enums\OrderStatusEnum;
+use Modules\Payment\Models\Payment;
+use Modules\User\Models\User;
 
 class Order extends Model
 {
@@ -49,7 +49,7 @@ class Order extends Model
     public function updateOrderStatus(OrderStatusEnum $status, ?string $notes = null, ?array $metadata = null, ?int $userId = null): OrderStatus
     {
         // Validate transition
-        if (!$this->canTransitionToOrderStatus($status)) {
+        if (! $this->canTransitionToOrderStatus($status)) {
             throw new InvalidArgumentException("Invalid order status transition from {$this->order_status->value} to {$status->value}");
         }
 
@@ -73,7 +73,7 @@ class Order extends Model
     public function updateDeliveryStatus(DeliveryStatusEnum $status, ?string $notes = null, ?array $metadata = null, ?int $userId = null): OrderStatus
     {
         // Validate transition
-        if (!$this->canTransitionToDeliveryStatus($status)) {
+        if (! $this->canTransitionToDeliveryStatus($status)) {
             throw new InvalidArgumentException("Invalid delivery status transition from {$this->delivery_status->value} to {$status->value}");
         }
 
@@ -100,10 +100,10 @@ class Order extends Model
         $validTransitions = $this->getValidOrderTransitions();
 
         // Safety check
-        if (!isset($validTransitions[$currentStatus->value])) {
+        if (! isset($validTransitions[$currentStatus->value])) {
             return false;
         }
-        
+
         return in_array($newStatus->value, $validTransitions[$currentStatus->value] ?? []);
     }
 
@@ -113,10 +113,10 @@ class Order extends Model
         $validTransitions = $this->getValidDeliveryTransitions();
 
         // Add safety check
-        if (!isset($validTransitions[$currentStatus->value])) {
+        if (! isset($validTransitions[$currentStatus->value])) {
             return false;
         }
-        
+
         return in_array($newStatus->value, $validTransitions[$currentStatus->value] ?? []);
     }
 
@@ -129,14 +129,14 @@ class Order extends Model
                 'cancelled',      // Customer or admin cancels
                 'processing',     // Skip confirmation and start processing
             ],
-            
+
             // From CONFIRMED, you can:
             'confirmed' => [
                 'processing',     // Start processing
                 'cancelled',      // Cancel before processing
                 'pending',        // Go back to pending (if needed)
             ],
-            
+
             // From PROCESSING, you can:
             'processing' => [
                 'ready_for_pickup', // Ready for customer pickup (shop)
@@ -145,33 +145,33 @@ class Order extends Model
                 'confirmed',        // Go back to confirmed (if needed)
                 'pending',          // Go back to pending (if needed)
             ],
-            
+
             // From READY_FOR_PICKUP, you can:
             'ready_for_pickup' => [
                 'completed',        // Customer picked up
                 'cancelled',        // Customer never picked up
                 'processing',       // Go back to processing (if needed)
             ],
-            
+
             // From COMPLETED, you can:
             'completed' => [
                 'refunded',         // Post-sale refund
                 'cancelled',        // Mark as cancelled (if needed)
                 'returned',         // Customer returned item
             ],
-            
+
             // From CANCELLED, you can:
             'cancelled' => [
                 'refunded',         // Process refund
                 'processing',       // Un-cancel (if customer changes mind)
                 'completed',        // Complete without refund
             ],
-            
+
             // From REFUNDED, you can:
             'refunded' => [
                 'completed',        // Customer keeps item but got refund
             ],
-            
+
             // From RETURNED, you can:
             'returned' => [
                 'refunded',         // Process refund for returned items
@@ -191,7 +191,7 @@ class Order extends Model
                 'delivery_failed',  // Delivery attempt failed
                 'returned',         // Returned before delivery
             ],
-            
+
             // From PICKED_UP, you can:
             'picked_up' => [
                 'in_transit',       // On the way
@@ -199,7 +199,7 @@ class Order extends Model
                 'delivery_failed',  // Something went wrong
                 'returned',         // Returned to sender
             ],
-            
+
             // From IN_TRANSIT, you can:
             'in_transit' => [
                 'out_for_delivery', // Out for final delivery
@@ -207,27 +207,27 @@ class Order extends Model
                 'delivery_failed',  // Delivery failed
                 'returned',         // Return to sender
             ],
-            
+
             // From OUT_FOR_DELIVERY, you can:
             'out_for_delivery' => [
                 'delivered',        // Successfully delivered
                 'delivery_failed',  // Delivery attempt failed
                 'returned',         // Return to sender
             ],
-            
+
             // From DELIVERED, you can:
             'delivered' => [
                 'returned',         // Customer returns item
                 'delivery_failed',  // Mark as failed (if customer claims not received)
             ],
-            
+
             // From DELIVERY_FAILED, you can:
             'delivery_failed' => [
                 'returned',         // Return to sender
                 'out_for_delivery', // Try delivery again
                 'delivered',        // Actually was delivered
             ],
-            
+
             // From RETURNED, you can:
             'returned' => [
                 'pending',          // Re-send
@@ -388,24 +388,24 @@ class Order extends Model
                     OrderStatusEnum::CANCELLED->value,
                     OrderStatusEnum::REFUNDED->value,
                 ])
-                ->whereNotIn('delivery_status', [
-                    DeliveryStatusEnum::PICKED_UP->value,
-                    DeliveryStatusEnum::IN_TRANSIT->value,
-                    DeliveryStatusEnum::OUT_FOR_DELIVERY->value,
-                ]);
+                    ->whereNotIn('delivery_status', [
+                        DeliveryStatusEnum::PICKED_UP->value,
+                        DeliveryStatusEnum::IN_TRANSIT->value,
+                        DeliveryStatusEnum::OUT_FOR_DELIVERY->value,
+                    ]);
             });
-            
+
             // CASE 2: Payment issues (partial or unpaid)
             $q->orWhere(function ($sub) {
                 $sub->whereColumn('amount_paid', '<', 'total_selling_price');
             });
-            
+
             // CASE 3: Delivery failures (stolen, lost, etc.)
             $q->orWhere('delivery_status', DeliveryStatusEnum::DELIVERY_FAILED->value);
-            
+
             // CASE 4: Returns (need processing)
             $q->orWhere('order_status', OrderStatusEnum::RETURNED->value);
-            
+
             // CASE 5: Cancelled but not refunded
             $q->orWhere(function ($sub) {
                 $sub->where('order_status', OrderStatusEnum::CANCELLED->value)
@@ -426,17 +426,17 @@ class Order extends Model
             return $query;
         }
 
-        $search_term = '%' . strtolower($search) . '%';
+        $search_term = '%'.strtolower($search).'%';
 
         return $query->where(function ($q) use ($search_term) {
             $q->whereRaw('LOWER(order_number) LIKE ?', [$search_term])
-            ->orWhereRaw('LOWER(customer_name) LIKE ?', [$search_term])
-            ->orWhereRaw('LOWER(customer_phone) LIKE ?', [$search_term])
-            ->orWhereRaw('LOWER(order_status) LIKE ?', [$search_term])
-            ->orWhereHas('user', function ($user_query) use ($search_term) {
-                $user_query->whereRaw('LOWER(name) LIKE ?', [$search_term])
-                ->orWhereRaw('LOWER(email) LIKE ?', [$search_term]);
-            });
+                ->orWhereRaw('LOWER(customer_name) LIKE ?', [$search_term])
+                ->orWhereRaw('LOWER(customer_phone) LIKE ?', [$search_term])
+                ->orWhereRaw('LOWER(order_status) LIKE ?', [$search_term])
+                ->orWhereHas('user', function ($user_query) use ($search_term) {
+                    $user_query->whereRaw('LOWER(name) LIKE ?', [$search_term])
+                        ->orWhereRaw('LOWER(email) LIKE ?', [$search_term]);
+                });
         });
     }
 }

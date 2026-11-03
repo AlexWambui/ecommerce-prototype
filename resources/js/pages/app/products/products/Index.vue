@@ -7,9 +7,9 @@ import DeleteConfirmationDialog from '@/components/custom/DeleteConfirmation.vue
 import Pagination from '@/components/custom/Pagination.vue';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { usePriceFormatter } from '@/composables/usePriceFormatter';
-import ProductsNav from '../components/ProductsNav.vue';
 import productRoutes from '@/routes/products';
 import type { Product } from '@/types/product';
+import ProductsNav from '../components/ProductsNav.vue';
 
 const { formatPrice } = usePriceFormatter();
 
@@ -83,14 +83,14 @@ const getDisplayRange = computed(() => {
 
 const hasActiveFilters = computed(() => !!search.value);
 
-const toggleAttribute = async (product: Product, attribute: 'is_featured' | 'is_new' | 'is_active') => {
+const toggleAttribute = async (product: Product, attribute: 'is_featured' | 'is_new' | 'is_active' | 'track_inventory') => {
     const currentValue = product[attribute];
     const newValue = !currentValue;
     
     toggling.value = { id: product.id, attribute };
     
     try {
-        const response = await fetch(productRoutes.toggleAttribute(product.id).url, {
+        const response = await fetch(productRoutes.toggleAttribute(product.uuid).url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -133,6 +133,8 @@ const getTagClasses = (type: string, value: boolean) => {
             return `${baseClasses} bg-green-500 text-white hover:bg-green-600`;
         case 'is_active':
             return `${baseClasses} bg-blue-500 text-white hover:bg-blue-600`;
+        case 'track_inventory':
+            return `${baseClasses} bg-blue-500 text-white hover:bg-blue-600`;
         default:
             return baseClasses;
     }
@@ -142,36 +144,23 @@ const isLoading = (product: Product, attribute: string) => {
     return toggling.value?.id === product.id && toggling.value?.attribute === attribute;
 };
 
-const truncateDescription = (text: string, maxLength: number = 60): string => {
-    if (!text) {
-        return '-';
-    }
-
-    if (text.length <= maxLength) {
-        return text;
-    }
-
-    return text.substring(0, maxLength) + '...';
-};
-
-// const getTagLabel = (type: string, product: Product) => {
-//     const attribute = type as 'is_featured' | 'is_new' | 'is_active';
-
-//     if (isLoading(product, attribute)) {
-//         return ''; // Return empty string, we'll show the spinner
+// const truncateDescription = (text: string, maxLength: number = 60): string => {
+//     if (!text) {
+//         return '-';
 //     }
-    
-//     switch (type) {
-//         case 'is_featured':
-//             return 'Featured';
-//         case 'is_new':
-//             return 'New';
-//         case 'is_active':
-//             return 'Active';
-//         default:
-//             return '';
+
+//     if (text.length <= maxLength) {
+//         return text;
 //     }
+
+//     return text.substring(0, maxLength) + '...';
 // };
+
+// A product is out of stock only if it tracks inventory AND has none left.
+// Untracked products are always "in stock".
+const isOutOfStock = (product: Product): boolean => {
+    return product.track_inventory && Number(product.current_stock) <= 0;
+};
 </script>
 
 <template>
@@ -180,7 +169,7 @@ const truncateDescription = (text: string, maxLength: number = 60): string => {
     <AppPageHeader
         resourceName="Products"
         v-model="search"
-        search-placeholder="Search by name..."
+        search-placeholder="Search by name, sku or barcode..."
         create-url="/products/create"
         create-label="Product"
         @search="handleSearch"
@@ -198,7 +187,110 @@ const truncateDescription = (text: string, maxLength: number = 60): string => {
         </div>
     </div>
 
-    <div class="table-wrapper">
+    <div class="md:hidden space-y-3">
+        <div
+            v-for="(product, index) in products.data"
+            :key="product.id"
+            class="border border-border rounded-lg p-4 bg-card shadow-sm"
+            :class="{ 'bg-red-50 border-red-400': isOutOfStock(product) }"
+        >
+            <div class="flex items-start justify-between mb-3">
+                <div>
+                    <p class="text-xs text-muted-foreground">
+                        #{{ (products.meta.current_page - 1) * products.meta.per_page + index + 1 }}
+                    </p>
+                    <p class="font-semibold text-base">{{ product.name }}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <Link :href="productRoutes.edit(product.uuid).url" class="action edit p-2">
+                        <Pencil class="w-4 h-4 text-green-600" />
+                    </Link>
+                    <DeleteConfirmationDialog
+                        :url="productRoutes.destroy(product.uuid).url"
+                        title="Delete Product?"
+                        description="This product will be deleted permanently!"
+                        confirm-text="Delete Product"
+                    >
+                        <template #trigger>
+                            <button class="action delete p-2">
+                                <Trash2 class="w-4 h-4 text-red-600" />
+                            </button>
+                        </template>
+                    </DeleteConfirmationDialog>
+                </div>
+            </div>
+
+            <div class="space-y-1.5 text-sm mb-3">
+                <div class="flex justify-between">
+                    <span class="text-muted-foreground">Category:</span>
+                    <span class="font-medium text-right">{{ product.category_name }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-muted-foreground">Stock Count:</span>
+                    <span class="font-medium text-right">
+                        {{ product.current_stock }}
+                        <span
+                            v-if="isOutOfStock(product)"
+                            class="ml-1 inline-flex items-center rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-700"
+                        >
+                            Out of Stock
+                        </span>
+                    </span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-muted-foreground">Price:</span>
+                    <span class="font-medium text-right">{{ formatPrice(product.price) }}</span>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-2 pt-3 border-t border-border">
+                <button
+                    @click="toggleAttribute(product, 'is_featured')"
+                    :disabled="isLoading(product, 'is_featured')"
+                    :class="getTagClasses('is_featured', product.is_featured)"
+                >
+                    <Loader2 v-if="isLoading(product, 'is_featured')" class="w-3 h-3 animate-spin" />
+                    <span v-else>Featured</span>
+                </button>
+
+                <button
+                    @click="toggleAttribute(product, 'is_new')"
+                    :disabled="isLoading(product, 'is_new')"
+                    :class="getTagClasses('is_new', product.is_new)"
+                >
+                    <Loader2 v-if="isLoading(product, 'is_new')" class="w-3 h-3 animate-spin" />
+                    <span v-else>New</span>
+                </button>
+
+                <button
+                    @click="toggleAttribute(product, 'is_active')"
+                    :disabled="isLoading(product, 'is_active')"
+                    :class="getTagClasses('is_active', product.is_active)"
+                >
+                    <Loader2 v-if="isLoading(product, 'is_active')" class="w-3 h-3 animate-spin" />
+                    <span v-else>Active</span>
+                </button>
+
+                <button
+                    @click="toggleAttribute(product, 'track_inventory')"
+                    :disabled="isLoading(product, 'track_inventory')"
+                    :class="getTagClasses('track_inventory', product.track_inventory)"
+                >
+                    <Loader2 v-if="isLoading(product, 'track_inventory')" class="w-3 h-3 animate-spin" />
+                    <span v-else> Track Inventory</span>
+                </button>
+            </div>
+        </div>
+
+        <div
+            v-if="products.data.length === 0"
+            class="border border-border rounded-lg p-8 text-center text-muted-foreground"
+        >
+            No products found.
+        </div>
+    </div>
+
+    <div class="table-wrapper hidden md:block">
         <Table>
             <TableHeader>
                 <TableRow>
@@ -207,7 +299,7 @@ const truncateDescription = (text: string, maxLength: number = 60): string => {
                     <TableHead>Product</TableHead>
                     <TableHead>SKU</TableHead>
                     <TableHead>Price (Ksh)</TableHead>
-                    <TableHead class="description-col">Description</TableHead>
+                    <TableHead>Inventory</TableHead>
                     <TableHead>Category</TableHead>
                     <TableHead class="tags">Tags</TableHead>
                     <TableHead class="actions">Actions</TableHead>
@@ -219,13 +311,27 @@ const truncateDescription = (text: string, maxLength: number = 60): string => {
                     v-for="(product, index) in products.data" 
                     :key="product.id"
                     :class="{
-                        'duplicate-product-row bg-red-50 hover:bg-red-100': isDuplicate(product.id)
+                        'duplicate-product-row bg-red-50 hover:bg-red-100': isDuplicate(product.id),
+                        'bg-red-50 border-l-4 border-red-500 hover:bg-red-100' : !isDuplicate(product.id) && isOutOfStock(product),
                     }"
                 >
-                    <TableCell class="id">{{ (products.meta.current_page - 1) * products.meta.per_page + index + 1 }}</TableCell>
-                    <TableCell class="w-20"><img :src="product.thumbnail_url" :alt="product.slug"></TableCell>
+                    <TableCell class="id">
+                        {{ (products.meta.current_page - 1) * products.meta.per_page + index + 1 }}
+                    </TableCell>
+                    <TableCell class="w-20">
+                        <img :src="product.thumbnail_url" :alt="product.slug">
+                    </TableCell>
                     <TableCell class="max-w-30 overflow-hidden text-ellipsis cursor-help" :title="product.name">
                         {{ product.name }}
+
+                        <!-- Out of stock indicator -->
+                        <span
+                            v-if="isOutOfStock(product)"
+                            class="ml-2 inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700"
+                        >
+                            Out of stock
+                        </span>
+
                         <!-- Duplicate indicator -->
                         <span v-if="isDuplicate(product.id)" class="ml-2 text-xs text-red-600 font-bold">
                             ⚠️ Duplicate
@@ -233,12 +339,7 @@ const truncateDescription = (text: string, maxLength: number = 60): string => {
                     </TableCell>
                     <TableCell>{{ product.sku ?? '-' }}</TableCell>
                     <TableCell>{{ formatPrice(product.price) }}</TableCell>
-                    <TableCell 
-                        class="description-col max-w-50 truncate cursor-help" 
-                        :title="product.description || 'No description'"
-                    >
-                        {{ truncateDescription(product.description, 60) }}
-                    </TableCell>
+                    <TableCell :class="{'font-bold text-red-600' : isOutOfStock(product)}">{{ product.current_stock }}</TableCell>
                     <TableCell>{{ product.category_name }}</TableCell>
                     <TableCell class="tags min-w-50 w-45">
                         <div class="tags-wrapper flex flex-wrap gap-4">
@@ -271,16 +372,25 @@ const truncateDescription = (text: string, maxLength: number = 60): string => {
                                 <Loader2 v-if="isLoading(product, 'is_active')" class="w-3 h-3 animate-spin" />
                                 <span v-else>Active</span>
                             </button>
+
+                            <button
+                                @click="toggleAttribute(product, 'track_inventory')"
+                                :disabled="isLoading(product, 'track_inventory')"
+                                :class="getTagClasses('track_inventory', product.track_inventory)"
+                            >
+                                <Loader2 v-if="isLoading(product, 'track_inventory')" class="w-3 h-3 animate-spin" />
+                                <span v-else> Track Inventory</span>
+                            </button>
                         </div>
                     </TableCell>
                     <TableCell class="actions w-20">
                         <div class="actions-wrapper">
-                            <Link :href="productRoutes.edit(product.id).url" class="action edit">
+                            <Link :href="productRoutes.edit(product.uuid).url" class="action edit">
                                 <Pencil />
                             </Link>
                             <span class="divider">|</span>
                             <DeleteConfirmationDialog 
-                                :url="productRoutes.destroy(product.id).url" 
+                                :url="productRoutes.destroy(product.uuid).url" 
                                 title="Delete Product?" 
                                 description="This product will be deleted permanently!" 
                                 confirm-text="Delete Product"
@@ -296,7 +406,7 @@ const truncateDescription = (text: string, maxLength: number = 60): string => {
                 </TableRow>
 
                 <TableRow v-if="products.data.length === 0">
-                    <TableCell colspan="9" class="blank-table-row">
+                    <TableCell colspan="12" class="blank-table-row">
                         No products found.
                     </TableCell>
                 </TableRow>
@@ -321,19 +431,6 @@ const truncateDescription = (text: string, maxLength: number = 60): string => {
 </template>
 
 <style scoped>
-.description-col {
-    max-width: 200px;
-    min-width: 120px;
-    width: 200px;
-}
-
-/* Truncate description text */
-.description-col.truncate {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
 /* Duplicate product row styling */
 .duplicate-product-row {
     background-color: rgb(254, 242, 242) !important; /* red-50 */
@@ -377,15 +474,6 @@ const truncateDescription = (text: string, maxLength: number = 60): string => {
     to {
         opacity: 1;
         transform: translateY(0);
-    }
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .description-col {
-        max-width: 100px;
-        min-width: 80px;
-        width: 100px;
     }
 }
 </style>

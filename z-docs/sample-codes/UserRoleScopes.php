@@ -11,10 +11,9 @@ trait UserRoleScopes
     /**
      * Scope to return users visible based on the role of the authenticated user.
      */
-
     public function scopeVisibleToRole(Builder $query, UserRoles $role): Builder
     {
-        return match($role) {
+        return match ($role) {
             UserRoles::SUPER_ADMIN => $query, // See everyone
             UserRoles::ADMIN => $query->whereIn('role', [
                 UserRoles::ADMIN,

@@ -48,7 +48,7 @@ return new class extends Migration
             $table->string('customer_name_snapshot')->nullable();
             $table->string('customer_email_snapshot')->nullable();
             $table->string('customer_phone_snapshot')->nullable();
-            
+
             // Delivery details snapshot
             $table->string('shipping_location_snapshot')->nullable();
             $table->string('shipping_area_snapshot')->nullable();
@@ -57,7 +57,7 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamp('sold_at');
             $table->timestamps();
-            
+
             // Indexes for fast lookups
             $table->index(['sold_at']);
             $table->index(['customer_phone']);

@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Session;
-use App\Models\Sales\CartItem;
 use App\Models\Products\Product;
+use App\Models\Sales\CartItem;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 
 class CartService
 {
-    public function add(int $product_id, int $quantity =1): void
+    public function add(int $product_id, int $quantity = 1): void
     {
         if (auth()->check()) {
             $item = CartItem::firstOrCreate(
@@ -17,8 +17,7 @@ class CartService
                 ['quantity' => 0]
             );
             $item->increment('quantity', $quantity);
-        }
-        else {
+        } else {
             $cart = Session::get('cart', []);
             $cart[$product_id] = ($cart[$product_id] ?? 0) + $quantity;
             Session::put('cart', $cart);
@@ -29,8 +28,7 @@ class CartService
     {
         if (auth()->check()) {
             return CartItem::where('user_id', auth()->id())->sum('quantity');
-        }
-        else {
+        } else {
             return collect(Session::get('cart', []))->sum();
         }
     }
@@ -38,18 +36,18 @@ class CartService
     public function getItems()
     {
         if (auth()->check()) {
-            return CartItem::with(['product' => function($query) {
-                    $query->where('is_visible', true);
-                }])
+            return CartItem::with(['product' => function ($query) {
+                $query->where('is_visible', true);
+            }])
                 ->where('user_id', auth()->id())->get();
-        }
-        else {
+        } else {
             $productIds = array_keys(Session::get('cart', []));
             $products = Product::whereIn('id', $productIds)->get();
+
             return $products->map(function ($product) {
-                return (object)[
+                return (object) [
                     'product' => $product,
-                    'quantity' => Session::get("cart")[$product->id],
+                    'quantity' => Session::get('cart')[$product->id],
                 ];
             });
         }
@@ -57,23 +55,20 @@ class CartService
 
     public function update(int $product_id, int $quantity): void
     {
-        if(auth()->check()) {
+        if (auth()->check()) {
             if ($quantity <= 0) {
                 $this->remove($product_id);
-            }
-            else {
+            } else {
                 CartItem::updateOrCreate(
                     ['user_id' => auth()->id(), 'product_id' => $product_id],
                     ['quantity' => $quantity]
                 );
             }
-        }
-        else {
+        } else {
             $cart = Session::get('cart', []);
             if ($quantity <= 0) {
                 unset($cart[$product_id]);
-            }
-            else {
+            } else {
                 $cart[$product_id] = $quantity;
             }
 
@@ -87,8 +82,7 @@ class CartService
             CartItem::where('user_id', auth()->id())
                 ->where('product_id', $product_id)
                 ->delete();
-        }
-        else {
+        } else {
             $cart = Session::get('cart', []);
             unset($cart[$product_id]);
             Session::put('cart', $cart);
@@ -99,8 +93,7 @@ class CartService
     {
         if (auth()->check()) {
             CartItem::where('user_id', auth()->id())->delete();
-        }
-        else {
+        } else {
             Session::forget('cart');
         }
     }

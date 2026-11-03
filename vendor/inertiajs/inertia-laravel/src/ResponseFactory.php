@@ -4,10 +4,12 @@ namespace Inertia;
 
 use BackedEnum;
 use Closure;
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Debug\ExceptionHandler as ExceptionHandlerContract;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Arr;
@@ -17,6 +19,7 @@ use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Response as BaseResponse;
 use Illuminate\Support\Traits\Macroable;
 use Inertia\DevTools\DevTools;
+use Inertia\Ssr\ConfiguresSsrRequests;
 use Inertia\Ssr\DisablesSsr;
 use Inertia\Ssr\ExcludesSsrPaths;
 use Inertia\Ssr\Gateway;
@@ -24,7 +27,7 @@ use Inertia\Support\Header;
 use Inertia\Support\SessionKey;
 use InvalidArgumentException;
 use LogicException;
-use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirectResponse;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use UnitEnum;
 
@@ -238,6 +241,20 @@ class ResponseFactory
     }
 
     /**
+     * Configure the HTTP request that is sent to the SSR server.
+     */
+    public function configureSsrRequestUsing(?Closure $callback = null): void
+    {
+        $gateway = app(Gateway::class);
+
+        if (! $gateway instanceof ConfiguresSsrRequests) {
+            throw new LogicException('The configured SSR gateway does not support configuring server-side rendering requests.');
+        }
+
+        $gateway->configureRequestUsing($callback);
+    }
+
+    /**
      * Create an optional property.
      */
     public function optional(callable $callback): OptionalProp
@@ -296,6 +313,18 @@ class ResponseFactory
     public function scroll($value, string $wrapper = 'data', ProvidesScrollMetadata|callable|null $metadata = null): ScrollProp
     {
         return new ScrollProp($value, $wrapper, $metadata);
+    }
+
+    /**
+     * Create a live property.
+     *
+     * @param  mixed  $value
+     * @param  object|class-string|string|array<int, object|class-string|string>|null  $on
+     * @param  string|Channel|array<int, string|Channel>|null  $channel
+     */
+    public function live($value, mixed $on = null, string|Channel|array|null $channel = null, ?int $throttle = null): LiveProp
+    {
+        return new LiveProp($value, $on, $channel, $throttle);
     }
 
     /**
@@ -382,6 +411,7 @@ class ResponseFactory
             $this->getVersion(),
             $this->encryptHistory ?? config('inertia.history.encrypt', false),
             $this->urlResolver,
+            preserveBigIntegers: (bool) config('inertia.preserve_big_integers', false),
         );
 
         DevTools::recorder()?->pageRendering($component, $response, $this->sharedProps);
@@ -390,17 +420,34 @@ class ResponseFactory
     }
 
     /**
+     * Resolve props for a broadcast payload.
+     *
+     * @param  array<array-key, mixed>  $props
+     * @return array{__inertia: array{props: array<array-key, mixed>}}
+     */
+    public function broadcastProps(array $props): array
+    {
+        $resolver = new PropsResolver(request(), '');
+
+        return [
+            '__inertia' => [
+                'props' => $resolver->resolveBroadcastProps($props),
+            ],
+        ];
+    }
+
+    /**
      * Create an Inertia location response.
      *
-     * @param  string|RedirectResponse  $url
+     * @param  string|SymfonyRedirectResponse  $url
      */
     public function location($url): SymfonyResponse
     {
         if (Request::inertia()) {
-            return BaseResponse::make('', 409, [Header::LOCATION => $url instanceof RedirectResponse ? $url->getTargetUrl() : $url]);
+            return BaseResponse::make('', 409, [Header::LOCATION => $url instanceof SymfonyRedirectResponse ? $url->getTargetUrl() : $url]);
         }
 
-        return $url instanceof RedirectResponse ? $url : Redirect::away($url);
+        return $url instanceof SymfonyRedirectResponse ? $url : Redirect::away($url);
     }
 
     /**

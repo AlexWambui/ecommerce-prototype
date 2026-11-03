@@ -42,6 +42,10 @@
         .inputs-group-wrapper-3 {
             @apply md:grid-cols-3;
         }
+
+        .inputs-group-wrapper-4 {
+            @apply md:grid-cols-4;
+        }
     }
 }
 

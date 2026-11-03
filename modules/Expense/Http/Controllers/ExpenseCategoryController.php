@@ -3,13 +3,13 @@
 namespace Modules\Expense\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
-use Modules\Expense\Models\ExpenseCategory;
 use Modules\Expense\Http\Requests\ExpenseCategoryRequest;
 use Modules\Expense\Http\Resources\ExpenseCategoryResource;
-use Exception;
+use Modules\Expense\Models\ExpenseCategory;
 
 class ExpenseCategoryController extends Controller
 {
@@ -57,7 +57,7 @@ class ExpenseCategoryController extends Controller
 
             Inertia::flash('toast', [
                 'type' => 'error',
-                'message' => 'Failed to create category: ' . $e->getMessage(),
+                'message' => 'Failed to create category: '.$e->getMessage(),
             ]);
 
             return back()->withErrors(['error' => $e->getMessage()]);
@@ -94,7 +94,7 @@ class ExpenseCategoryController extends Controller
 
             Inertia::flash('toast', [
                 'type' => 'error',
-                'message' => 'Failed to update category: ' . $e->getMessage(),
+                'message' => 'Failed to update category: '.$e->getMessage(),
             ]);
 
             return back()->withErrors(['error' => $e->getMessage()]);
@@ -127,7 +127,7 @@ class ExpenseCategoryController extends Controller
 
             Inertia::flash('toast', [
                 'type' => 'error',
-                'message' => 'Failed to delete category: ' . $e->getMessage(),
+                'message' => 'Failed to delete category: '.$e->getMessage(),
             ]);
 
             return back()->withErrors(['error' => $e->getMessage()]);

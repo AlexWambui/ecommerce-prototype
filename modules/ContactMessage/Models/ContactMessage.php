@@ -2,9 +2,9 @@
 
 namespace Modules\ContactMessage\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
 use App\Concerns\HasUuid;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class ContactMessage extends Model
 {
@@ -14,17 +14,17 @@ class ContactMessage extends Model
 
     protected $casts = [
         'is_read' => 'boolean',
-        'is_resolved' => 'boolean'
+        'is_resolved' => 'boolean',
     ];
 
     public function scopeSearch(Builder $query, $search): Builder
     {
-        if (!$search) {
+        if (! $search) {
             return $query;
         }
 
         $searchTerm = strtolower($search);
-        
+
         return $query->where(function (Builder $q) use ($searchTerm) {
             $q->whereRaw('LOWER(name) LIKE ?', ["%{$searchTerm}%"])
                 ->orWhereRaw('LOWER(phone_number) LIKE ?', ["%{$searchTerm}%"])
@@ -40,5 +40,4 @@ class ContactMessage extends Model
 
         return $query->where('is_resolved', $status === 'resolved');
     }
-
 }

@@ -4,19 +4,19 @@ namespace Modules\Order\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Modules\Order\Enums\DeliveryStatusEnum;
 use Modules\Order\Enums\OrderStatusEnum;
-use Modules\Order\Models\Order;
-use Modules\Order\Models\OrderItem;
-use Modules\Product\Models\Product;
-use Modules\Payment\Models\Payment;
+use Modules\Order\Http\Requests\OrderRequest;
 use Modules\Order\Http\Resources\OrderResource;
 use Modules\Order\Http\Resources\ProductPOSResource;
-use Modules\Order\Http\Requests\OrderRequest;
+use Modules\Order\Models\Order;
+use Modules\Order\Models\OrderItem;
+use Modules\Payment\Models\Payment;
+use Modules\Product\Models\Product;
 
 class OrderController extends Controller
 {
@@ -27,7 +27,7 @@ class OrderController extends Controller
         return Inertia::render('app/orders/orders/Index', [
             'orders' => OrderResource::collection($orders),
             'filters' => [
-                'search' => $request->search
+                'search' => $request->search,
             ],
         ]);
     }
@@ -40,7 +40,7 @@ class OrderController extends Controller
             ->get();
 
         return inertia('app/orders/orders/Create', [
-            'products' => ProductPOSResource::collection($products)
+            'products' => ProductPOSResource::collection($products),
         ]);
     }
 
@@ -50,7 +50,7 @@ class OrderController extends Controller
 
         return DB::transaction(function () use ($validated) {
             // --- CALCULATE TOTALS ---
-            $subtotal = collect($validated['cart_items'])->sum(fn($item) => $item['price'] * ($item['quantity'] ?? 1));
+            $subtotal = collect($validated['cart_items'])->sum(fn ($item) => $item['price'] * ($item['quantity'] ?? 1));
 
             // Total cost price
             $total_cost_price = 0;
@@ -66,8 +66,8 @@ class OrderController extends Controller
             $total_paid = collect($validated['payments'])->sum('amount');
 
             // Determine initial order status
-            $initialOrderStatus = $validated['delivery_method'] === 'delivery' 
-                ? OrderStatusEnum::PENDING 
+            $initialOrderStatus = $validated['delivery_method'] === 'delivery'
+                ? OrderStatusEnum::PENDING
                 : OrderStatusEnum::PROCESSING;
 
             // delivery details
@@ -77,10 +77,10 @@ class OrderController extends Controller
 
             // --- CREATE THE ORDER ---
             $order = Order::create([
-                'order_number' => 'Ord_' . strtoupper(Str::random(6)) . '_' . now()->format('ymd'),
+                'order_number' => 'Ord_'.strtoupper(Str::random(6)).'_'.now()->format('ymd'),
                 'order_channel' => $validated['order_channel'],
                 'order_status' => $initialOrderStatus->value,
-                
+
                 'subtotal' => $subtotal,
                 'shipping_cost' => $validated['delivery_cost'],
                 'total_selling_price' => $total_selling_price,
@@ -104,7 +104,7 @@ class OrderController extends Controller
             $orderStatus = $order->orderStatuses()->create([
                 'type' => 'order',
                 'status' => $initialOrderStatus->value,
-                'notes' => 'Order created via ' . $validated['order_channel'],
+                'notes' => 'Order created via '.$validated['order_channel'],
                 'user_id' => Auth::id(), // If admin is logged in
                 'is_system' => false,
                 'changed_at' => now(),
@@ -124,11 +124,11 @@ class OrderController extends Controller
             foreach ($validated['cart_items'] as $item) {
                 $product = Product::find($item['id']);
                 $quantity = $item['quantity'] ?? 1;
-                
+
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $product->id,
-                    
+
                     'product_name' => $product->name,
                     'product_sku' => $product->sku ?? null,
                     'quantity' => $quantity,
@@ -151,7 +151,7 @@ class OrderController extends Controller
                         'transaction_reference' => null, // Handled manually for walk-in
                         'amount' => $paymentData['amount'],
                         'payment_status' => 'paid',
-                        'paid_at' => now()
+                        'paid_at' => now(),
                     ]);
                 }
             }
@@ -183,7 +183,7 @@ class OrderController extends Controller
 
             Inertia::flash('toast', [
                 'type' => 'success',
-                'message' => "Order added successfully",
+                'message' => 'Order added successfully',
             ]);
 
             return redirect()->back();
@@ -204,8 +204,8 @@ class OrderController extends Controller
     public function update(Request $request, Order $order)
     {
         $validated = $request->validate([
-            'order_status' => 'required|string|in:' . implode(',', OrderStatusEnum::values()),
-            'delivery_status' => 'nullable|string|in:' . implode(',', DeliveryStatusEnum::values()),
+            'order_status' => 'required|string|in:'.implode(',', OrderStatusEnum::values()),
+            'delivery_status' => 'nullable|string|in:'.implode(',', DeliveryStatusEnum::values()),
             'notes' => 'nullable|string|max:1000',
             'metadata' => 'nullable|array',
         ]);
@@ -238,8 +238,8 @@ class OrderController extends Controller
             DB::commit();
 
             Inertia::flash('toast', [
-                'type' => "success",
-                'message' => "Order updated successfully"
+                'type' => 'success',
+                'message' => 'Order updated successfully',
             ]);
 
             return to_route('orders.index');
@@ -248,8 +248,8 @@ class OrderController extends Controller
             DB::rollBack();
 
             Inertia::flash('toast', [
-                'type' => "error",
-                'message' => "Order failed to update: {$e->getMessage()}"
+                'type' => 'error',
+                'message' => "Order failed to update: {$e->getMessage()}",
             ]);
 
             return back()->withErrors(['error' => $e->getMessage()]);

@@ -12,7 +12,6 @@ class ContactMessageResource extends JsonResource
      *
      * @return array<string, mixed>
      */
-
     public function toArray(Request $request): array
     {
         return [
@@ -22,7 +21,7 @@ class ContactMessageResource extends JsonResource
             'phone_number' => $this->phone_number,
             'message' => $this->message,
             'is_read' => (bool) $this->is_read,
-            'is_resolved' => (bool) $this->is_resolved
+            'is_resolved' => (bool) $this->is_resolved,
         ];
     }
 }

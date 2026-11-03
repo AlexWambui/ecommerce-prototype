@@ -33,12 +33,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
-import GuestLayout from '@/Layouts/GuestLayout.vue'
+import { ref } from 'vue'
 import CartItem from '@/Components/Cart/CartItem.vue'
 import CartSummary from '@/Components/Cart/CartSummary.vue'
 import { useToast } from '@/Composables/useToast'
+import GuestLayout from '@/Layouts/GuestLayout.vue'
 
 const props = defineProps({
   cart: {
@@ -51,7 +51,9 @@ const toast = useToast()
 const loading = ref(false)
 
 const updateQuantity = async (itemId, quantity) => {
-  if (quantity < 1) return
+  if (quantity < 1) {
+return
+}
   
   loading.value = true
   
@@ -82,7 +84,9 @@ const updateQuantity = async (itemId, quantity) => {
 }
 
 const removeItem = async (itemId) => {
-  if (!confirm('Remove this item from your cart?')) return
+  if (!confirm('Remove this item from your cart?')) {
+return
+}
   
   loading.value = true
   
@@ -110,7 +114,9 @@ const removeItem = async (itemId) => {
 }
 
 const clearCart = async () => {
-  if (!confirm('Clear your entire cart?')) return
+  if (!confirm('Clear your entire cart?')) {
+return
+}
   
   loading.value = true
   

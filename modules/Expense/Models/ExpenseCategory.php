@@ -2,10 +2,10 @@
 
 namespace Modules\Expense\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Concerns\HasSlug;
 use App\Concerns\HasUuid;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ExpenseCategory extends Model
 {
@@ -24,7 +24,7 @@ class ExpenseCategory extends Model
             return $query;
         }
 
-        $search_term = '%' . strtolower($search) . '%';
+        $search_term = '%'.strtolower($search).'%';
 
         return $query->where(function ($q) use ($search_term) {
             $q->whereRaw('LOWER(name) LIKE ?', [$search_term])
