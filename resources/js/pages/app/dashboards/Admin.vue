@@ -177,7 +177,7 @@ const fmtPct = (n: number | null) =>
             </div>
         </section>
 
-        <section class="glance">
+        <section class="TodayStats glance">
             <h2 class="mb-4 font-medium">Today at a glance</h2>
             <div class="stats grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <DashboardStat
@@ -236,7 +236,7 @@ const fmtPct = (n: number | null) =>
             </div>
         </section>
 
-        <section class="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
+        <section class="Performance flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
             <h2 class="font-medium">Performance</h2>
             <div class="flex gap-1 p-1 bg-muted rounded-md">
                 <button
@@ -254,7 +254,7 @@ const fmtPct = (n: number | null) =>
             </div>
         </section>
 
-        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <section class="SalesTrend grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2 bg-background p-4 rounded-lg border border-border h-80">
                 <h3 class="text-sm font-medium mb-2">
                     Sales trend - {{ periodLabel[stats.period] }}
@@ -280,7 +280,7 @@ const fmtPct = (n: number | null) =>
             </div>
         </section>
 
-        <section class="stats-wrapper">
+        <section class="FiscalSnapshot stats-wrapper">
             <h2 class="mb-4 font-medium">
                 Fiscal snapshot - {{ periodLabel[stats.period] }}
             </h2>
@@ -320,7 +320,7 @@ const fmtPct = (n: number | null) =>
             </div>
         </section>
 
-        <section class="grid lg:grid-cols-2 gap-8">
+        <section class="Products_Expenses grid lg:grid-cols-2 gap-8">
             <div class="bg-background p-4 rounded-lg border border-border">
                 <h3 class="text-sm font-medium mb-3">
                     Top products - {{ periodLabel[stats.period] }}
@@ -366,10 +366,10 @@ const fmtPct = (n: number | null) =>
             </div>
         </section>
 
-        <section class="stats-wrapper">
+        <section class="PlatformStatistics stats-wrapper">
             <h2 class="mb-4 font-medium">Platform Statistics</h2>
             
-            <div class="stats grid gap-8 lg:grid-cols-6">
+            <div class="stats grid gap-8 lg:grid-cols-5">
                 <DashboardStat :stat="stats.counts.total_users" label="Users">
                     <template #extras>
                         <span class="text-sm text-muted-foreground">
