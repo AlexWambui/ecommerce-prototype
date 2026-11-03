@@ -49,6 +49,30 @@ defineProps<{
                 </div>
 
                 <div class="inputs-group">
+                    <Label for="expense_category_id">Expense Category</Label>
+                    <Select name="expense_category_id">
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="Select expense category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectItem :value="null">None</SelectItem>
+                                <SelectItem 
+                                    v-for="option in categories" 
+                                    :key="option.id"
+                                    :value="option.id"
+                                >
+                                    {{ option.name }}
+                                </SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                    <InputError :message="errors.expense_category_id" />
+                </div>
+            </div>
+
+            <div class="inputs-group-wrapper">
+                <div class="inputs-group">
                     <Label for="expense_date" class="required">Date</Label>
                     <Input
                         id="expense_date"
@@ -84,28 +108,6 @@ defineProps<{
                     />
                     <InputError :message="errors.receipt_number" />
                 </div>
-            </div>
-
-            <div class="inputs-group">
-                <Label for="expense_category_id">Expense Category</Label>
-                <Select name="expense_category_id">
-                    <SelectTrigger class="w-full">
-                        <SelectValue placeholder="Select expense category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectGroup>
-                            <SelectItem :value="null">None</SelectItem>
-                            <SelectItem 
-                                v-for="option in categories" 
-                                :key="option.id"
-                                :value="option.id"
-                            >
-                                {{ option.name }}
-                            </SelectItem>
-                        </SelectGroup>
-                    </SelectContent>
-                </Select>
-                <InputError :message="errors.expense_category_id" />
             </div>
 
             <div class="inputs-group">
