@@ -3,10 +3,10 @@ import { Link } from '@inertiajs/vue3';
 </script>
 
 <template>
-    <section class="Hero relative w-full min-h-[80vh] md:min-h-[90vh] flex items-center justify-center bg-cover bg-center bg-no-repeat" :style="{ backgroundImage: `url(assets/images/alsuwa-hero-image.png)` }">
+    <section class="Hero relative w-full min-h-[80vh] md:min-h-[90vh] flex items-center justify-center bg-cover bg-center bg-no-repeat" :style="{ backgroundImage: `url(assets/images/alsuwa-hero-image.jpg)` }">
         
         <!-- Gradient Overlay -->
-        <div class="absolute inset-0 bg-linear-to-r from-black/70 via-black/50 to-black/70 z-10"></div>
+        <div class="absolute inset-0 bg-linear-to-r from-black/70 via-black/80 to-black/70 z-10"></div>
         
         <!-- Text Content -->
         <div class="relative z-20 container mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
