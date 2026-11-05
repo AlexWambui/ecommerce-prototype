@@ -51,12 +51,12 @@ const {brandName, brandTagline, brandDescription} = useAppConfig();
         <ShopLocation />
 
         <section class="CTA container-fluid mb-15">
-            <div class="container-fluid py-12! space-y-2 text-center bg-blue-200 text-black rounded-lg">
+            <div class="container-fluid py-12! space-y-2 text-center bg-amber-400 text-black rounded-lg">
                 <p class="uppercase text-body-label-text">Discover {{ brandName }}</p>
                 <p class="font-bold text-heading-text">{{ brandTagline }}</p>
                 <p>{{ brandDescription }}</p>
                 <div class="action_btn mt-8">
-                    <a href="/shop" class="py-4 px-4 rounded-sm bg-amber-400">Discover {{ brandName }}</a>
+                    <a href="/shop" class="py-4 px-4 rounded-sm bg-black text-white">Discover {{ brandName }}</a>
                 </div>
             </div>
         </section>

@@ -27,7 +27,7 @@ defineProps<Props>();
 			<div class="container-fluid grid lg:grid-cols-12 gap-8">
 				<div class="content lg:col-span-7 space-y-4">
 					<h1 class="title font-bold text-l-text lg:text-xl-text uppercase">Best Online <br> Shopping Experience.</h1>
-					<div class="actions mt-8 bg-amber-400 font-bold py-4 px-8 inline-block rounded-sm">
+					<div class="actions mt-8 bg-amber-400 text-black font-bold py-4 px-8 inline-block rounded-sm">
 						<Link href="/shop">Start Shopping</Link>
 					</div>
 				</div>
