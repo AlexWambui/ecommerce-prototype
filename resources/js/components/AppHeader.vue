@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, LayoutGrid, Menu, Users, PhoneCall, Barcode, TruckElectric, Clipboard, BanknoteArrowDown } from '@lucide/vue';
+import { BookOpen, LayoutGrid, Menu, Users, PhoneCall, Barcode, TruckElectric, Clipboard, BanknoteArrowDown, Sun, Moon } from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
@@ -12,6 +12,7 @@ import { NavigationMenu, NavigationMenuItem, NavigationMenuList, navigationMenuT
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import UserMenuContent from '@/components/UserMenuContent.vue';
+import { useAppearance } from '@/composables/useAppearance';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import { getInitials } from '@/composables/useInitials';
 import { toUrl } from '@/lib/utils';
@@ -31,6 +32,8 @@ type Props = {
 const props = withDefaults(defineProps<Props>(), {
     breadcrumbs: () => [],
 });
+
+const { appearance, updateAppearance } = useAppearance();
 
 const page = usePage();
 const auth = computed(() => page.props.auth);
@@ -121,7 +124,7 @@ const rightNavItems: NavItem[] = [
 </script>
 
 <template>
-    <div>
+    <div class="sticky top-0 bg-background/95 backdrop-blur-sm">
         <div class="border-b border-sidebar-border/80">
             <div class="mx-auto flex h-16 items-center px-4 lg:px-16">
                 <!-- Mobile Menu -->
@@ -244,6 +247,15 @@ const rightNavItems: NavItem[] = [
                                 class="size-5 opacity-80 group-hover:opacity-100"
                             />
                         </Button> -->
+
+                        <button
+                            @click="updateAppearance(appearance === 'light' ? 'dark' : 'light')"
+                            class="toggle-theme p-2 rounded-md hover:bg-accent"
+                            title="Toggle theme"
+                        >
+                            <Sun v-if="appearance === 'light'" class="icon sun-icon w-5 h-5" />
+                            <Moon v-else class="icon moon-icon w-5 h-5" />
+                        </button>
 
                         <div class="hidden space-x-1 lg:flex">
                             <template

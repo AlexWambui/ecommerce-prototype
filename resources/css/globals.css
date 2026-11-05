@@ -5,3 +5,7 @@ a,
 button {
     @apply cursor-pointer;
 }
+
+.container-fluid {
+    @apply px-4 lg:px-16 py-4;
+}

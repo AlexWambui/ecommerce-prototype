@@ -81,7 +81,7 @@ const toggleResolved = () => {
 
                 <div class="content py-4 space-y-4">
                     <div class="message-container flex">
-                        <p class="message grid bg-blue-100 p-4 rounded-lg w-full lg:w-[65%]">
+                        <p class="message grid bg-blue-100 text-black p-4 rounded-lg w-full lg:w-[65%]">
                             <span>{{ contact_message.data.message }}</span>
                             <span class="text-xs mt-1 text-gray-600">
                                 {{ contact_message.data.created_at_time_formatted }}

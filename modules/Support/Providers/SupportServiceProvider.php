@@ -25,7 +25,7 @@ class SupportServiceProvider extends ServiceProvider
         $this->app->register(OrderServiceProvider::class);
         $this->app->register(PaymentServiceProvider::class);
         $this->app->register(ExpenseServiceProvider::class);
-        // $this->app->register(\Modules\Storefront\Providers\StorefrontServiceProvider::class);
+        $this->app->register(\Modules\Storefront\Providers\StorefrontServiceProvider::class);
         // $this->app->register(\Modules\StoreBranch\Providers\BranchServiceProvider::class);
     }
 

@@ -32,7 +32,7 @@ class ContactMessageController extends Controller
 
     public function create()
     {
-        return Inertia::render('marketing/contact/Create');
+        return inertia('storefront/contact/Index');
     }
 
     public function store(Request $request)
