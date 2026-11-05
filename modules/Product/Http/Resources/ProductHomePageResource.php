@@ -22,7 +22,8 @@ class ProductHomePageResource extends JsonResource
 
             'price' => $this->price,
 
-            'current_stock' => (float) $this->current_stock,
+            'current_stock' => $this->current_stock,
+            'low_stock_threshold' => $this->low_stock_threshold,
 
             'category_name' => $this->category_name,
             'brand_name' => $this->brand_name,

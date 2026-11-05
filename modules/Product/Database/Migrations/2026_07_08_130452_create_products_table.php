@@ -32,9 +32,9 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
 
             // Inventory Tracking
-            $table->decimal('current_stock', 10, 2)->default(0.00); // For services, default is 0
+            $table->unsignedInteger('current_stock')->default(0); // For services, default is 0
             $table->boolean('track_inventory')->default(true);
-            $table->decimal('low_stock_threshold', 10, 2)->default(0.00);
+            $table->unsignedTinyInteger('low_stock_threshold')->default(0);
 
             $table->foreignId('product_category_id')->nullable()->constrained('product_categories')->nullOnDelete();
             $table->foreignId('product_brand_id')->nullable()->constrained('product_brands')->nullOnDelete();

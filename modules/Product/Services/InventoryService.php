@@ -21,19 +21,19 @@ class InventoryService
             return PHP_INT_MAX; // Effectively unlimited
         }
 
-        return (float) $product->current_stock;
+        return $product->current_stock;
     }
 
     /**
      * Check if product has sufficient stock.
      */
-    public function hasSufficientStock(Product $product, float $quantity): bool
+    public function hasSufficientStock(Product $product, int $quantity): bool
     {
         if (! $product->track_inventory) {
             return true;
         }
 
-        return (float) $product->current_stock >= $quantity;
+        return $product->current_stock >= $quantity;
     }
 
     /**
@@ -41,7 +41,7 @@ class InventoryService
      */
     public function addStock(
         Product $product,
-        float $quantity,
+        int $quantity,
         InventoryMovementTypes $type,
         string $source,
         ?string $notes = null,
@@ -76,7 +76,7 @@ class InventoryService
      */
     public function removeStock(
         Product $product,
-        float $quantity,
+        int $quantity,
         InventoryMovementTypes $type, // Changed from string to enum
         string $source,
         ?string $notes = null,

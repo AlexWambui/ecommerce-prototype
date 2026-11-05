@@ -28,8 +28,8 @@ class Product extends Model
         'is_featured' => 'boolean',
         'is_new' => 'boolean',
         'track_inventory' => 'boolean',
-        'current_stock' => 'decimal:2',
-        'low_stock_threshold' => 'decimal:2',
+        'current_stock' => 'integer',
+        'low_stock_threshold' => 'integer',
         'cost_price' => 'decimal:2',
         'price' => 'decimal:2',
     ];
@@ -117,6 +117,16 @@ class Product extends Model
         });
     }
 
+    public function scopeNewArrivals(Builder $query): Builder
+    {
+        return $query->sellable()->where('is_new', true)->where('is_active', true);
+    }
+
+    public function scopeFeatured(Builder $query): Builder
+    {
+        return $query->sellable()->where('is_featured', true)->where('is_active', true);
+    }
+
     public function scopeSearch(Builder $query, ?string $search): Builder
     {
         if (! $search) {
@@ -138,13 +148,13 @@ class Product extends Model
         return (bool) $this->track_inventory;
     }
 
-    public function hasStockFor(int|float $quantity): bool
+    public function hasStockFor(int $quantity): bool
     {
         if (! $this->tracksInventory()) {
             return true;
         }
 
-        return (float) $this->current_stock >= (float) $quantity;
+        return $this->current_stock >= $quantity;
     }
 
     private function ensureInventoryIsTracked(): void
@@ -155,7 +165,7 @@ class Product extends Model
     }
 
     public function addStock(
-        float $quantity,
+        int $quantity,
         InventoryMovementTypes $type,
         string $source,
         ?string $notes = null,
@@ -166,7 +176,7 @@ class Product extends Model
         return DB::transaction(function () use ($quantity, $type, $source, $notes, $metadata) {
             $locked = static::query()->lockForUpdate()->find($this->id);
 
-            $before = (float) $locked->current_stock;
+            $before = $locked->current_stock;
             $after = $before + $quantity;
 
             $locked->update(['current_stock' => $after]);
@@ -185,7 +195,7 @@ class Product extends Model
         });
     }
 
-    public function updateStock(float $new_quantity, InventoryMovementTypes $type, string $source, ?string $notes = null, ?array $metadata = null): InventoryMovement
+    public function updateStock(int $new_quantity, InventoryMovementTypes $type, string $source, ?string $notes = null, ?array $metadata = null): InventoryMovement
     {
         $this->ensureInventoryIsTracked();
 
@@ -193,7 +203,7 @@ class Product extends Model
             // Re-fetch with a row lock so no one else can change stock in parallel
             $locked = static::query()->lockForUpdate()->find($this->id);
 
-            $before = (float) $locked->current_stock;
+            $before = $locked->current_stock;
             $quantity_change = $new_quantity - $before;
 
             $locked->update(['current_stock' => $new_quantity]);
@@ -213,7 +223,7 @@ class Product extends Model
     }
 
     public function removeStock(
-        float $quantity,
+        int $quantity,
         InventoryMovementTypes $type,
         string $source,
         ?string $notes = null,
@@ -225,7 +235,7 @@ class Product extends Model
             // Re-fetch with a row lock so no one else can change stock in parallel
             $locked = static::query()->lockForUpdate()->find($this->id);
 
-            $before = (float) $locked->current_stock;
+            $before = $locked->current_stock;
             $after = $before - $quantity;
 
             if ($after < 0) {

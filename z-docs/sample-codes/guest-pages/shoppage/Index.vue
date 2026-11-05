@@ -3,7 +3,7 @@ import { ref, watch, computed } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
 import { Link, router } from '@inertiajs/vue3';
 import Input from '@/components/ui/input/Input.vue';
-import ProductCard from '../common/ProductCardSingleImage.vue';
+import ProductCardMultipleImages from '../common/ProductCardSingleImage.vue';
 import Pagination from '@/components/custom/Pagination.vue';
 import type { Product } from '@/types/product';
 import shopPageRoutes from '@/routes/shop-page';
@@ -102,7 +102,7 @@ const getDisplayRange = computed(() => {
 
             <!-- Products Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                <ProductCard 
+                <ProductCardMultipleImages
                     v-for="product in products.data" 
                     :key="product.id" 
                     :product="product"

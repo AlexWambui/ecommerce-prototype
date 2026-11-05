@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import ProductCard from './ProductCard.vue';
+import ProductCardMultipleImages from './ProductCard.vue';
 import ProductCardSkeleton from './ProductCardSkeleton.vue';
 
 interface ProductImage {
@@ -64,7 +64,7 @@ const emit = defineEmits<{
                 <ProductCardSkeleton v-if="loading" v-for="n in (skeletonCount || 8)" :key="'skeleton-' + n" />
                 
                 <!-- Products -->
-                <ProductCard 
+                <ProductCardMultipleImages
                     v-else
                     v-for="product in products" 
                     :key="product.id"

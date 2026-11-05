@@ -249,7 +249,7 @@ const hasActiveFilters = computed(() =>
 
                 <TableBody>
                     <TableRow v-for="product in products.data" :key="product.id">
-                        <TableCell class="font-medium">{{ product.name }}</TableCell>
+                        <TableCell class="font-medium max-w-75 truncate">{{ product.name }}</TableCell>
                         <TableCell class="text-sm text-gray-500">{{ product.sku || 'N/A' }}</TableCell>
                         <TableCell>
                             <div :class="product.stock_badge_class" 

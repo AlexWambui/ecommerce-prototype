@@ -43,7 +43,7 @@ class ProductRequest extends FormRequest
             'is_active' => ['boolean'],
             'is_new' => ['boolean'],
             'track_inventory' => ['boolean'],
-            'low_stock_threshold' => ['nullable', 'numeric', 'min:0', Rule::requiredIf(fn () => $this->boolean('track_inventory'))],
+            'low_stock_threshold' => ['nullable', 'integer', 'min:0', Rule::requiredIf(fn () => $this->boolean('track_inventory'))],
             'current_stock' => ['prohibited'],
             'product_category_id' => ['nullable', 'exists:product_categories,id'],
             'product_brand_id' => ['nullable', 'exists:product_brands,id'],
