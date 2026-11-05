@@ -10,6 +10,7 @@ interface AppConfig {
         shop: string;
     };
     contacts: {
+        email: string;
         phone: string;
         whatsapp_phone_number: string;
         whatsapp_phone: string;
@@ -34,6 +35,7 @@ const config: AppConfig = {
         shop: 'F, Room 4',
     },
     contacts: {
+        email: 'info@alsuwa.com',
         phone: '+254 745 744 261',
         whatsapp_phone_number: '+254 745 744 261',
         whatsapp_phone: WHATSAPP_PHONE,

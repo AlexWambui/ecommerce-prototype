@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
-import { PhoneCall, MapPin } from '@lucide/vue';
+import { PhoneCall, MapPin, Mail } from '@lucide/vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,11 +24,17 @@ const {brandName, contacts, socials, location} = useAppConfig();
                     <div class="content space-y-4">
                         <div class="content-header space-y-2">
                             <h1 class="uppercase text-body-label-text">Contact {{ brandName }}</h1>
-                            <p class="text-heading-text font-bold">Contact us for inquiries or help</p>
+                            <p class="text-heading-text font-bold">Get in Touch!</p>
+                            <p class="lg:max-w-[80%]">Use the following details to contact us or fill in the form with your question or queries and we will be sure to give you a callback within 24 hours.</p>
                         </div>
 
                         <div class="contact-details">
-                            <div class="cards grid gap-8 lg:grid-cols-2">
+                            <div class="cards grid gap-4 lg:grid-cols-2">
+                                <ContactCard>
+                                    <Mail />
+                                    <span>{{ contacts.email }}</span>
+                                </ContactCard>
+
                                 <ContactCard>
                                     <PhoneCall />
                                     <span>{{ contacts.phone }}</span>

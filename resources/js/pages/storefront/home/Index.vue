@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
 import ProductGrid from '@/pages/storefront/components/ProductGrid.vue';
+import Hero from './Hero.vue';
 
 interface Props {
 	new_arrivals: any[];
@@ -13,7 +13,7 @@ defineProps<Props>();
 
 <template>
     <div class="HomePage">
-		<section class="Hero lg:h-[90dvh] flex justify-center items-center">
+		<!-- <section class="Hero lg:h-[90dvh] flex justify-center items-center">
 			<div class="container-fluid grid lg:grid-cols-12 gap-8">
 				<div class="content lg:col-span-7 space-y-4">
 					<h1 class="title font-bold text-l-text lg:text-xl-text uppercase">Best Online <br> Shopping Experience.</h1>
@@ -26,7 +26,9 @@ defineProps<Props>();
 					<img src="/assets/images/alsuwa-hero-image.png" alt="Air Force shoe hero image" class="w-full h-full object-cover">
 				</div>
 			</div>
-		</section>
+		</section> -->
+
+		<Hero />
 
 		<section class="NewArrivals mb-15">
 			<ProductGrid 

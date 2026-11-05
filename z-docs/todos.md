@@ -4,20 +4,24 @@
 
 Store front
 
-❌ Home
-❌ Shop
-❌ Product Details
-❌ About
-❌ Contact
+✅ Home
+✅ Shop
+✅ Product Details
+✅ About
+✅ Contact
 
 Customers
 
-❌ can search for a product from the shop page
-❌ can view product details page
-❌ can filter products according to selected category on the shop page
+✅ can search for a product from the shop page (using name, sku)
+✅ can view product details page
+✅ can filter products according to selected category on the shop page
 ❌ can filter products according to selected brand on the shop page or home page
 ❌ can login and view their dashboard to track their purchases
 ❌ customers can have a customer profile where loyalty_id is auto generated
+❌ can add items to cart
+❌ can view items in the cart
+❌ can checkout
+❌ can pay using mpesa
 
 Sellers
 
