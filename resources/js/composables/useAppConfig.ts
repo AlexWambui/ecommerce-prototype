@@ -2,6 +2,7 @@ import { computed } from 'vue';
 
 interface AppConfig {
     brand_name: string;
+    brand_tagline: string;
     brand_description: string;
     location: {
         city: string;
@@ -25,11 +26,12 @@ const WHATSAPP_PHONE = '254745744261';
 
 const config: AppConfig = {
     brand_name: 'Alsuwa',
-    brand_description: 'Best Online Shopping Experience',
+    brand_tagline: 'Best Online Shopping Experience',
+    brand_description: 'Alsuwa is an online store that helps you easily track your sales and market your product catalogue.',
     location: {
-        city: 'Kiambu, Ruii',
-        address: 'Opposite Harvest Hill Plaza',
-        shop: 'TF, Room 4',
+        city: 'Kiambu, Kirigiti',
+        address: 'Opposite Kirigiti Golf Club',
+        shop: 'F, Room 4',
     },
     contacts: {
         phone: '+254 745 744 261',
@@ -47,6 +49,7 @@ const config: AppConfig = {
 export function useAppConfig() {
     return {
         brandName: computed(() => config.brand_name),
+        brandTagline: computed(() => config.brand_tagline),
         brandDescription: computed(() => config.brand_description),
         location: computed(() => config.location),
         contacts: computed(() => config.contacts),

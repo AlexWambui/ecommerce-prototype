@@ -2,7 +2,7 @@
 import { PhoneCall } from '@lucide/vue';
 import { useAppConfig } from '@/composables/useAppConfig';
 
-const { brandName, brandDescription, location, socials, contacts } = useAppConfig();
+const { brandName, brandTagline, location, socials, contacts } = useAppConfig();
 </script>
 
 <template>
@@ -10,7 +10,7 @@ const { brandName, brandDescription, location, socials, contacts } = useAppConfi
         <div class="container-fluid grid gap-8 lg:grid-cols-4 py-4 px-4 lg:px-16">
             <div class="branding space-y-2">
                 <p class="name text-heading-text font-bold">{{brandName}}</p>
-                <p class="description">{{brandDescription}}</p>
+                <p class="description">{{brandTagline}}</p>
                 <p class="location grid">
                     <span>{{location.city}}</span>
                     <span>{{location.address}}</span>
