@@ -7,7 +7,7 @@ import ProductCardSingleImage from '../../components/ProductCardSingleImage.vue'
 
 const {formatPrice} = usePriceFormatter();
 
-defineProps<{
+const props = defineProps<{
     product: {
         data: Product
     }
@@ -23,6 +23,11 @@ const selectedImageIndex = ref(0);
 // 2. Helper function to switch the image when a thumbnail is clicked
 const selectImage = (index: number) => {
     selectedImageIndex.value = index;
+};
+
+const onAddToCart = () => {
+    // TODO: call your cart store / POST endpoint
+    console.log('add to cart', props.product.data.slug);
 };
 </script>
 
@@ -81,9 +86,10 @@ const selectImage = (index: number) => {
                         <AddToCartButton 
                             :product-slug="product.data.slug"
                             :product-name="product.data.name"
-                            :product-price="formatPrice(product.data.price)"
-                            variant="whatsapp"
-                            button-text="Chat on WhatsApp"
+                            :product-price="product.data.price"
+                            variant="default"
+                            button-text="Add to Cart"
+                            @add-to-cart="onAddToCart"
                         />
 
                         <div></div>

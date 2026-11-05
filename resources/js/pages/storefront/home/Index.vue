@@ -1,18 +1,8 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import ProductGrid from '@/pages/storefront/components/ProductGrid.vue';
-// import Brands from './Brands.vue';
-
-interface Brand {
-	id: number;
-	name: string;
-	image_url: string;
-}
 
 interface Props {
-    brands: {
-		data: Brand[];
-	};
 	new_arrivals: any[];
 	most_popular: any[];
     search?: string;

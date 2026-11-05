@@ -19,7 +19,7 @@ class ProductDetailsResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'sku' => $this->sku,
-            'price' => $this->price,
+            'price' => (float) $this->price,
             'measurement' => $this->measurement,
             'color' => $this->color,
             'category_name' => $this->category_name,

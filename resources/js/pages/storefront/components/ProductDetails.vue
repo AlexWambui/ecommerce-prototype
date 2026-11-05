@@ -7,10 +7,14 @@ import type {Product} from '@/types/product';
 
 const {formatPrice} = usePriceFormatter();
 
-defineProps<{
+const props = defineProps<{
     product: Product;
 }>();
 
+const onAddToCart = () => {
+    // TODO: call your cart store / POST endpoint
+    console.log('add to cart', props.product.slug);
+};
 </script>
 
 <template>
@@ -49,12 +53,13 @@ defineProps<{
         </div>
 
         <div class="cart__btn mt-auto pt-1">
-            <AddToCartButton 
+            <AddToCartButton
                 :product-slug="product.slug"
                 :product-name="product.name"
-                :product-price="formatPrice(product.price)"
-                variant="whatsapp"
-                button-text="Chat on WhatsApp"
+                :product-price="product.price"
+                variant="default"
+                button-text="Add to Cart"
+                @add-to-cart="onAddToCart"
             />
         </div>
     </div>
