@@ -1,0 +1,1 @@
+import{s as e}from"./Presence-KGoet0T0.js";import{b as t,mt as n,xt as r}from"./runtime-core.esm-bundler-B4b-2GOK.js";import{t as i}from"./_plugin-vue_export-helper-BDNMzG2s.js";var a=e({default:()=>l}),o={},s={class:`card bg-accent rounded-sm flex gap-2 p-4`};function c(e,i){return n(),t(`div`,s,[r(e.$slots,`default`)])}var l=i(o,[[`render`,c]]);export{a as n,l as t};

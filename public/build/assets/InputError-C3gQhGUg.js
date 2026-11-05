@@ -1,0 +1,1 @@
+import{Yt as e,_ as t,b as n,k as r,mt as i,tr as a}from"./runtime-core.esm-bundler-B4b-2GOK.js";import{S as o}from"./runtime-dom.esm-bundler-BbefLSIS.js";var s={class:`text-sm text-red-600 dark:text-red-500`},c=r({__name:`InputError`,props:{message:{}},setup(r){return(c,l)=>e((i(),n(`div`,null,[t(`p`,s,a(r.message),1)],512)),[[o,r.message]])}});export{c as t};
