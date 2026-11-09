@@ -15,14 +15,18 @@ class ExpenseCategorySeeder extends Seeder
     {
         $categories = [
             ['name' => 'Rent'],
-            ['name' => 'Utilities'],
+            ['name' => 'Water'],
+            ['name' => 'Electricity'],
+            ['name' => 'Internet'],
+            ['name' => 'Airtime'],
+            ['name' => 'Packaging'],
+            ['name' => 'Transport'],
             ['name' => 'Salaries & Wages'],
             ['name' => 'Marketing & Advertising'],
             ['name' => 'Software Subscriptions'],
             ['name' => 'Payment Processing Fees'],
             ['name' => 'Shipping & Logistics'],
             ['name' => 'Maintenance & Repairs'],
-            ['name' => 'Office Supplies'],
             ['name' => 'Miscellaneous'],
         ];
 
