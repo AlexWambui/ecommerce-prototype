@@ -2,10 +2,10 @@
 
 namespace Modules\Payment\Models;
 
-use App\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Order\Models\Order;
+use Modules\Support\Concerns\HasUuid;
 
 class Payment extends Model
 {

@@ -22,15 +22,17 @@ return new class extends Migration
 
             // Metadata block to avoid massive dedicated columns for card and mpesa specific details
             $table->json('payment_metadata')->nullable(); // Saves raw card details or callback payloads
+            $table->text('notes')->nullable();
 
             $table->foreignId('order_id')->constrained()->onDelete('cascade');
-
+            
             $table->timestamp('paid_at');
             $table->timestamps();
-
+            
             $table->index('order_id');
             $table->index('transaction_reference');
             $table->index('payment_status');
+            $table->index(['order_id', 'payment_method', 'payment_status']);
         });
     }
 

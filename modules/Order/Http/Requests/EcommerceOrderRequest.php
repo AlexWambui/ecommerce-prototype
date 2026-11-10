@@ -4,6 +4,7 @@ namespace Modules\Order\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class EcommerceOrderRequest extends FormRequest
 {
@@ -30,8 +31,20 @@ class EcommerceOrderRequest extends FormRequest
 
             // Shipping
             'delivery_method' => ['required', 'in:delivery,pickup'],
-            'delivery_location' => ['required_if:delivery_method,delivery', 'nullable', 'string', 'max:200'],
-            'delivery_area' => ['required_if:delivery_method,delivery', 'nullable', 'string', 'max:200'],
+            'delivery_location_id' => [
+                'required_if:delivery_method,delivery',
+                'nullable',
+                'integer',
+                Rule::exists('delivery_locations', 'id')->where('is_active', true),
+            ],
+            'delivery_area_id' => [
+                'required_if:delivery_method,delivery',
+                'nullable',
+                'integer',
+                Rule::exists('delivery_areas', 'id')
+                    ->where('is_active', true)
+                    ->where('delivery_location_id', $this->input('delivery_location_id')),
+            ],
             'delivery_address' => ['required_if:delivery_method,delivery', 'nullable', 'string', 'max:500'],
             'notes' => ['nullable', 'string', 'max:1000'],
 

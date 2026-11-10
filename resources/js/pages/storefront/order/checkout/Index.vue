@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link, useForm } from '@inertiajs/vue3';
-import { ShoppingBag, ArrowLeft, AlertCircle } from '@lucide/vue';
+import { ShoppingBag, ArrowLeft, AlertCircle, Truck } from '@lucide/vue';
+import { computed, watch } from 'vue';
 import { usePriceFormatter } from '@/composables/usePriceFormatter';
 
 const { formatPrice } = usePriceFormatter();
@@ -13,10 +14,24 @@ interface CartItem {
     quantity: number;
 }
 
+interface DeliveryArea {
+    id: number;
+    name: string;
+    price: number;
+    estimated_days: number;
+}
+
+interface DeliveryLocation {
+    id: number;
+    name: string;
+    areas: DeliveryArea[];
+}
+
 const props = defineProps<{
     items: CartItem[];
     subtotal: number;
     itemCount: number;
+    locations: DeliveryLocation[];
     user?: { name: string; email: string; phone?: string } | null;
 }>();
 
@@ -25,11 +40,46 @@ const form = useForm({
     customer_email: props.user?.email ?? '',
     customer_phone: props.user?.phone ?? '',
     delivery_method: 'delivery' as 'delivery' | 'pickup',
-    delivery_location: '',
-    delivery_area: '',
+    delivery_location_id: null as number | null,
+    delivery_area_id: null as number | null,
     delivery_address: '',
     notes: '',
+    cart: '',
 });
+
+// --- Location / Area selection helpers ---
+
+const selectedLocation = computed(() =>
+    props.locations.find((l) => l.id === form.delivery_location_id) ?? null
+);
+
+const availableAreas = computed(() => selectedLocation.value?.areas ?? []);
+
+const selectedArea = computed(() =>
+    availableAreas.value.find((a) => a.id === form.delivery_area_id) ?? null
+);
+
+// When the user changes the location, reset the area if it doesn't belong to the new location
+watch(
+    () => form.delivery_location_id,
+    () => {
+        if (form.delivery_area_id && !availableAreas.value.some((a) => a.id === form.delivery_area_id)) {
+            form.delivery_area_id = null;
+        }
+    }
+);
+
+// --- Shipping / totals ---
+
+const shippingCost = computed(() => {
+    if (form.delivery_method === 'pickup') {
+        return 0;
+    }
+
+    return selectedArea.value?.price ?? 0;
+});
+
+const total = computed(() => props.subtotal + shippingCost.value);
 
 const submit = () => {
     form.post('/checkout', {
@@ -60,7 +110,6 @@ const submit = () => {
         </div>
 
         <form @submit.prevent="submit" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Left: form -->
             <div class="lg:col-span-2 space-y-6">
                 <!-- Contact info -->
                 <section class="border border-border rounded-lg p-5 bg-background space-y-4">
@@ -133,32 +182,53 @@ const submit = () => {
                 >
                     <h2 class="text-lg font-semibold">Delivery Address</h2>
 
+                    <!-- Location -->
                     <div>
                         <label class="block text-sm font-medium mb-1">City / Location</label>
-                        <input
-                            v-model="form.delivery_location"
-                            type="text"
+                        <select
+                            v-model.number="form.delivery_location_id"
                             class="w-full px-3 py-2 border border-border rounded-md bg-background"
-                            placeholder="Nairobi"
-                        />
-                        <p v-if="form.errors.delivery_location" class="text-xs text-red-600 mt-1">
-                            {{ form.errors.delivery_location }}
+                        >
+                            <option :value="null" disabled>Select a location</option>
+                            <option v-for="loc in locations" :key="loc.id" :value="loc.id">
+                                {{ loc.name }}
+                            </option>
+                        </select>
+                        <p v-if="form.errors.delivery_location_id" class="text-xs text-red-600 mt-1">
+                            {{ form.errors.delivery_location_id }}
                         </p>
                     </div>
 
+                    <!-- Area -->
                     <div>
-                        <label class="block text-sm font-medium mb-1">Area / Neighbourhood (optional)</label>
-                        <input
-                            v-model="form.delivery_area"
-                            type="text"
-                            class="w-full px-3 py-2 border border-border rounded-md bg-background"
-                            placeholder="Westlands"
-                        />
-                        <p v-if="form.errors.delivery_area" class="text-xs text-red-600 mt-1">
-                            {{ form.errors.delivery_area }}
+                        <label class="block text-sm font-medium mb-1">Area / Neighbourhood</label>
+                        <select
+                            v-model.number="form.delivery_area_id"
+                            :disabled="!form.delivery_location_id"
+                            class="w-full px-3 py-2 border border-border rounded-md bg-background disabled:opacity-50"
+                        >
+                            <option :value="null" disabled>
+                                {{ form.delivery_location_id ? 'Select an area' : 'Select a location first' }}
+                            </option>
+                            <option v-for="area in availableAreas" :key="area.id" :value="area.id">
+                                {{ area.name }} — Ksh. {{ formatPrice(area.price) }}
+                                ({{ area.estimated_days }} day{{ area.estimated_days > 1 ? 's' : '' }})
+                            </option>
+                        </select>
+                        <p v-if="form.errors.delivery_area_id" class="text-xs text-red-600 mt-1">
+                            {{ form.errors.delivery_area_id }}
+                        </p>
+                        <p
+                            v-if="selectedArea"
+                            class="text-xs text-muted-foreground mt-1 flex items-center gap-1"
+                        >
+                            <Truck class="w-3 h-3" />
+                            Estimated delivery: {{ selectedArea.estimated_days }}
+                            day{{ selectedArea.estimated_days > 1 ? 's' : '' }}
                         </p>
                     </div>
 
+                    <!-- Street address -->
                     <div>
                         <label class="block text-sm font-medium mb-1">Street Address</label>
                         <input
@@ -194,18 +264,9 @@ const submit = () => {
                     <h2 class="text-lg font-semibold">Order Summary</h2>
 
                     <div class="space-y-3 max-h-72 overflow-y-auto">
-                        <div
-                            v-for="item in items"
-                            :key="item.slug"
-                            class="flex gap-3 items-center"
-                        >
+                        <div v-for="item in items" :key="item.slug" class="flex gap-3 items-center">
                             <div class="w-12 h-12 rounded bg-accent flex items-center justify-center shrink-0 overflow-hidden">
-                                <img
-                                    v-if="item.thumbnail_url"
-                                    :src="item.thumbnail_url"
-                                    :alt="item.name"
-                                    class="w-full h-full object-cover"
-                                />
+                                <img v-if="item.thumbnail_url" :src="item.thumbnail_url" :alt="item.name" class="w-full h-full object-cover" />
                                 <ShoppingBag v-else class="w-5 h-5 text-muted-foreground" />
                             </div>
                             <div class="flex-1 min-w-0">
@@ -227,13 +288,21 @@ const submit = () => {
                         </div>
                         <div class="flex justify-between">
                             <span class="text-muted-foreground">Shipping</span>
-                            <span class="text-muted-foreground">Free</span>
+                            <span v-if="form.delivery_method === 'pickup'" class="text-muted-foreground">
+                                Free (pickup)
+                            </span>
+                            <span v-else-if="selectedArea">
+                                Ksh. {{ formatPrice(shippingCost) }}
+                            </span>
+                            <span v-else class="text-muted-foreground">
+                                Select area
+                            </span>
                         </div>
                     </div>
 
                     <div class="border-t border-border pt-3 flex justify-between font-semibold">
                         <span>Total</span>
-                        <span>Ksh. {{ formatPrice(subtotal) }}</span>
+                        <span>Ksh. {{ formatPrice(total) }}</span>
                     </div>
 
                     <!-- Cart-level error (stock conflicts, empty cart, etc.) -->

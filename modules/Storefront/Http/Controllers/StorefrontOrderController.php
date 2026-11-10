@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Modules\Order\Models\Order;
 use Modules\Order\Services\CartService;
+use Modules\Delivery\Models\DeliveryLocation;
 
 class StorefrontOrderController extends Controller
 {
@@ -77,6 +78,16 @@ class StorefrontOrderController extends Controller
                 ->with('error', 'Your cart is empty.');
         }
 
+        $locations = DeliveryLocation::query()
+        ->where('is_active', true)
+        ->with(['deliveryAreas' => fn ($q) => $q
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')])
+        ->orderBy('sort_order')
+        ->orderBy('name')
+        ->get(['id', 'name', 'slug']);
+
         /** @var User $user */
         $user = Auth::user();
 
@@ -86,6 +97,17 @@ class StorefrontOrderController extends Controller
             'itemCount' => $summary['itemCount'],
 
             'user' => $user?->only('name', 'email'),
+
+            'locations'   => $locations->map(fn ($l) => [
+                'id'    => $l->id,
+                'name'  => $l->name,
+                'areas' => $l->deliveryAreas->map(fn ($a) => [
+                    'id'    => $a->id,
+                    'name'  => $a->name,
+                    'price' => (float) $a->price,
+                    'estimated_days' => $a->estimated_days,
+                ]),
+            ]),
         ]);
     }
 

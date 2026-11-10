@@ -2,14 +2,15 @@
 
 namespace Modules\Order\Actions;
 
-use Modules\Order\Enums\DeliveryStatusEnum;
+use RuntimeException;
 use Modules\Order\Enums\OrderStatusEnum;
 use Modules\Order\Models\Order;
 use Modules\Order\Services\CartService;
 use Modules\Order\Services\OrderService;
 use Modules\Product\Models\Product;
 use Modules\User\Models\User;
-use RuntimeException;
+use Modules\Delivery\Models\DeliveryArea;
+use Modules\Order\Enums\DeliveryStatusEnum;
 
 class CreateEcommerceOrderAction
 {
@@ -53,6 +54,33 @@ class CreateEcommerceOrderAction
 
         $method = $validated['delivery_method'] === 'delivery' ? 'delivery' : 'shop';
 
+        // Compute shipping server-side — never trust the client
+        $shipping_cost = 0.0;
+        $location_name = 'shop';
+        $area_name     = 'shop';
+        $address      = 'shop';
+
+        if ($method === 'delivery') {
+            /** @var DeliveryArea|null $area */
+            $area = DeliveryArea::query()
+                ->where('is_active', true)
+                ->find($validated['delivery_area_id']);
+
+            if (! $area) {
+                throw new RuntimeException('Selected delivery area is no longer available.');
+            }
+
+            // Optional defence-in-depth: ensure area belongs to location
+            if ((int) $area->delivery_location_id !== (int) $validated['delivery_location_id']) {
+                throw new RuntimeException('Selected area does not belong to the chosen location.');
+            }
+
+            $shipping_cost = (float) $area->price;
+            $location_name = $area->location?->name ?? '';
+            $area_name     = $area->name;
+            $address      = $validated['delivery_address'];
+        }
+
         $data = [
             'order_channel' => 'ecommerce',
 
@@ -63,12 +91,12 @@ class CreateEcommerceOrderAction
             ],
 
             'delivery' => [
-                'method' => $method,
-                'cost' => 0.0, // no shipping calculation yet
-                'location' => $method === 'shop' ? 'shop' : $validated['delivery_location'],
-                'area' => $method === 'shop' ? 'shop' : ($validated['delivery_area'] ?? ''),
-                'address' => $method === 'shop' ? 'shop' : $validated['delivery_address'],
-                'status' => DeliveryStatusEnum::PENDING->value,
+                'method'   => $method,
+                'cost'     => $shipping_cost,
+                'location' => $location_name,
+                'area'     => $area_name,
+                'address'  => $address,
+                'status'   => DeliveryStatusEnum::PENDING->value,
             ],
 
             'cart_items' => $cartItems,
