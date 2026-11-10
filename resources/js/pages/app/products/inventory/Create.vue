@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { Head, useForm, router, Link } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { Head, useForm, Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import InputError from '@/components/InputError.vue';
 import Button from '@/components/ui/button/Button.vue';
 import Input from '@/components/ui/input/Input.vue';
-import Select from '@/components/ui/select/Select.vue';
 import Textarea from '@/components/ui/textarea/Textarea.vue';
 import productInventoryRoutes from '@/routes/products-inventory';
 
@@ -37,7 +36,7 @@ const movementOptions = computed(() => {
 const newStockPreview = computed(() => {
     const qty = Number(form.quantity) || 0;
 
-    return (Number(props.product.current_stock) + qty).toFixed(2);
+    return Number(props.product.current_stock) + qty;
 });
 
 const submit = () => {
@@ -97,7 +96,7 @@ const submit = () => {
                     v-model.number="form.quantity" 
                     type="number" 
                     min="1"
-                    step="0.01"
+                    step="1"
                 />
                 <p class="text-xs text-gray-500 mt-1">
                     New stock will be: 

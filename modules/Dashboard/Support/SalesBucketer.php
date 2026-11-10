@@ -32,21 +32,21 @@ class SalesBucketer
     {
         return match (DB::connection()->getDriverName()) {
             'sqlite' => match ($unit) {
-                'hour'  => "CAST(strftime('%H', sold_at) AS INTEGER)",
-                'dow'   => "CAST(strftime('%w', sold_at) AS INTEGER)",
-                'day'   => "CAST(strftime('%d', sold_at) AS INTEGER)",
+                'hour' => "CAST(strftime('%H', sold_at) AS INTEGER)",
+                'dow' => "CAST(strftime('%w', sold_at) AS INTEGER)",
+                'day' => "CAST(strftime('%d', sold_at) AS INTEGER)",
                 'month' => "CAST(strftime('%m', sold_at) AS INTEGER)",
             },
             'pgsql' => match ($unit) {
-                'hour'  => 'EXTRACT(HOUR FROM sold_at)::int',
-                'dow'   => 'EXTRACT(DOW FROM sold_at)::int',   // Sun=0
-                'day'   => 'EXTRACT(DAY FROM sold_at)::int',
+                'hour' => 'EXTRACT(HOUR FROM sold_at)::int',
+                'dow' => 'EXTRACT(DOW FROM sold_at)::int',   // Sun=0
+                'day' => 'EXTRACT(DAY FROM sold_at)::int',
                 'month' => 'EXTRACT(MONTH FROM sold_at)::int',
             },
             default => match ($unit) {                          // mysql / mariadb
-                'hour'  => 'HOUR(sold_at)',
-                'dow'   => '(DAYOFWEEK(sold_at) - 1)',          // Sun=0
-                'day'   => 'DAY(sold_at)',
+                'hour' => 'HOUR(sold_at)',
+                'dow' => '(DAYOFWEEK(sold_at) - 1)',          // Sun=0
+                'day' => 'DAY(sold_at)',
                 'month' => 'MONTH(sold_at)',
             },
         };
@@ -57,9 +57,9 @@ class SalesBucketer
     {
         return match ($period) {
             'today' => [array_map(fn ($h) => sprintf('%02d:00', $h), range(0, 23)), 'hour', range(0, 23)],
-            'week'  => [['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], 'dow', [1, 2, 3, 4, 5, 6, 0]],
+            'week' => [['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], 'dow', [1, 2, 3, 4, 5, 6, 0]],
             'month' => [array_map('strval', range(1, $to->daysInMonth)), 'day', range(1, $to->daysInMonth)],
-            'year'  => [['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], 'month', range(1, 12)],
+            'year' => [['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], 'month', range(1, 12)],
         };
     }
 }

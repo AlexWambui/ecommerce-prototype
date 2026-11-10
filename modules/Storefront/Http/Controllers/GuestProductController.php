@@ -2,12 +2,12 @@
 
 namespace Modules\Storefront\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Modules\Product\Models\Product;
-use Modules\Product\Models\ProductCategory;
+use Illuminate\Http\Request;
 use Modules\Product\Http\Resources\ProductDetailsResource;
 use Modules\Product\Http\Resources\ProductShopPageResource;
+use Modules\Product\Models\Product;
+use Modules\Product\Models\ProductCategory;
 
 class GuestProductController extends Controller
 {
@@ -27,7 +27,7 @@ class GuestProductController extends Controller
                 ->inRandomOrder()
                 ->limit(8)
                 ->get();
-            
+
             $related_products = $related_products->concat($category_products);
         }
 
@@ -41,9 +41,9 @@ class GuestProductController extends Controller
                 // Exclude products we already grabbed from Step 1
                 ->whereNotIn('id', $related_products->pluck('id'))
                 ->inRandomOrder()
-                ->limit(8 - $related_products->count()) 
+                ->limit(8 - $related_products->count())
                 ->get();
-            
+
             $related_products = $related_products->concat($brandProducts);
         }
 
@@ -58,17 +58,17 @@ class GuestProductController extends Controller
                 ->inRandomOrder()
                 ->limit(8 - $related_products->count())
                 ->get();
-            
+
             $related_products = $related_products->concat($randomProducts);
         }
 
         return inertia('storefront/products/details/Index', [
             'product' => new ProductDetailsResource($product),
-            'related_products' => ProductShopPageResource::collection($related_products)
+            'related_products' => ProductShopPageResource::collection($related_products),
         ]);
     }
 
-    public function shop(Request $request) 
+    public function shop(Request $request)
     {
         $products = Product::query()
             ->search($request->search)
@@ -84,7 +84,7 @@ class GuestProductController extends Controller
             ->with('images')
             ->orderBy('name')
             ->paginate(30);
-        
+
         $product_categories = ProductCategory::query()
             ->where('is_active', true)
             ->orderBy('name')
@@ -97,7 +97,7 @@ class GuestProductController extends Controller
             'filters' => [
                 'search' => $request->search,
                 'category' => $request->category,
-            ]
+            ],
         ]);
     }
 }

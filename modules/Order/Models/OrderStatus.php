@@ -2,9 +2,9 @@
 
 namespace Modules\Order\Models;
 
-use App\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Modules\Support\Concerns\HasUuid;
 use Modules\User\Models\User;
 
 class OrderStatus extends Model

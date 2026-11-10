@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import { usePriceFormatter } from '@/composables/usePriceFormatter';
 import type { Product } from '@/types/product';
@@ -7,7 +8,7 @@ import ProductCardSingleImage from '../../components/ProductCardSingleImage.vue'
 
 const {formatPrice} = usePriceFormatter();
 
-const props = defineProps<{
+defineProps<{
     product: {
         data: Product
     }
@@ -25,9 +26,17 @@ const selectImage = (index: number) => {
     selectedImageIndex.value = index;
 };
 
-const onAddToCart = () => {
-    // TODO: call your cart store / POST endpoint
-    console.log('add to cart', props.product.data.slug);
+const onAddToCart = (payload: { slug: string; name?: string; price?: number }) => {
+    router.post('/cart/add', { slug: payload.slug }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            // Optional: show a toast notification
+            console.log('Added to cart successfully');
+        },
+        onError: (errors) => {
+            console.error('Failed to add to cart', errors);
+        },
+    });
 };
 </script>
 

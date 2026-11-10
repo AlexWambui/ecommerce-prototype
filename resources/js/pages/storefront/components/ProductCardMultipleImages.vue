@@ -103,12 +103,13 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="bg-gray-50 rounded-xl shadow-sm hover:shadow-lg overflow-hidden transition-shadow duration-300 flex flex-col h-full"
-         @mouseenter="handleMouseEnter"
-         @mouseleave="handleMouseLeave">
+    <div class="bg-gray-50 rounded-xl shadow-sm hover:shadow-lg overflow-hidden transition-shadow duration-300 flex flex-col h-full">
 
         <!-- Image Carousel -->
-        <div class="product__image relative overflow-hidden bg-gray-100 aspect-square w-full">
+        <div class="product__image relative overflow-hidden bg-gray-100 aspect-square w-full"
+            @mouseenter="handleMouseEnter"
+            @mouseleave="handleMouseLeave"
+        >
             <img
                 :src="currentImage?.card_url || currentImage?.url || '/assets/images/default-image.png'"
                 :alt="currentImage?.alt || product.slug"

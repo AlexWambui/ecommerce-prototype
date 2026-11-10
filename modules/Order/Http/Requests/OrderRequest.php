@@ -24,8 +24,8 @@ class OrderRequest extends FormRequest
     {
         return [
             'order_channel' => 'required|string',
-            'customer_name' => 'required|string|max:255',
-            'customer_phone' => 'required|string|max:20',
+            'customer_name' => 'nullable|string|max:255',
+            'customer_phone' => 'nullable|string|max:20',
             'customer_email' => 'nullable|email|max:255',
             'delivery_method' => 'required|in:shop,delivery',
             'location' => 'nullable|string|max:255',
@@ -38,6 +38,8 @@ class OrderRequest extends FormRequest
             'cart_items' => 'required|array|min:1',
             'cart_items.*.id' => 'required|exists:products,id',
             'cart_items.*.price' => 'required|numeric|min:0',
+            'cart_items.*.quantity' => 'required|numeric|min:1',
+            'user_id' => 'nullable|integer|exists:users,id',
         ];
     }
 }

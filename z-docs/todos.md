@@ -45,4 +45,16 @@ General
 ✅ products: add logic for compressing images when adding new products
 ✅ products: add logic auto generating skus to make it easier to label products
 ✅ products: use stock count to activate or deactivate products that show on the home and pos pages
+❌ products: show and use discount price instead of selling price when we have discounts.
+❌ products can have variants.
+❌ products can have discounts.
 ❌ orders: use proper delivery locations and areas when creating an order
+❌ use modules support module for hasuuid, hasslug concerns instead of app.
+❌ ensure cart price and UI price + db price match for consistency.
+❌ ensure orders use stock count to avoid paying for non existent products.
+❌ orders can have discounts during checkout.
+
+KPIs
+
+❌ products that are out of stock don't appear on the POS.
+❌ products that are out of stock can't be added to cart.

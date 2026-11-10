@@ -1,4 +1,5 @@
-import { onBeforeUnmount, onMounted, type Ref } from 'vue';
+import { onBeforeUnmount, onMounted  } from 'vue';
+import type {Ref} from 'vue';
 
 export function useClickOutside(
     elRef: Ref<HTMLElement | null>,
@@ -6,7 +7,11 @@ export function useClickOutside(
 ) {
     const listener = (e: MouseEvent) => {
         const el = elRef.value;
-        if (!el || el.contains(e.target as Node)) return;
+
+        if (!el || el.contains(e.target as Node)) {
+return;
+}
+
         handler();
     };
 

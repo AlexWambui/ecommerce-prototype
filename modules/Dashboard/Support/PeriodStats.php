@@ -3,8 +3,8 @@
 namespace Modules\Dashboard\Support;
 
 use Carbon\CarbonInterface;
-use Modules\Order\Models\Order;
 use Modules\Expense\Models\Expense;
+use Modules\Order\Models\Order;
 
 class PeriodStats
 {
@@ -22,9 +22,9 @@ class PeriodStats
             ')
             ->first();
 
-        $orders      = (int) $summary->count;
-        $revenue     = (float) $summary->revenue;
-        $cogs        = (float) $summary->cogs;
+        $orders = (int) $summary->count;
+        $revenue = (float) $summary->revenue;
+        $cogs = (float) $summary->cogs;
         $grossProfit = $revenue - $cogs;
 
         // Operating expenses booked against this period.
@@ -39,15 +39,15 @@ class PeriodStats
         $netProfit = $grossProfit - $expenses;
 
         return [
-            'orders'       => $orders,
-            'revenue'      => $revenue,
-            'cogs'         => $cogs,
+            'orders' => $orders,
+            'revenue' => $revenue,
+            'cogs' => $cogs,
             'gross_profit' => $grossProfit,
-            'expenses'     => $expenses,
-            'net_profit'   => $netProfit,
-            'margin'       => $revenue > 0 ? ($grossProfit / $revenue) * 100 : 0.0,
-            'net_margin'   => $revenue > 0 ? ($netProfit  / $revenue) * 100 : 0.0,
-            'aov'          => $orders > 0 ? $revenue / $orders : 0.0,
+            'expenses' => $expenses,
+            'net_profit' => $netProfit,
+            'margin' => $revenue > 0 ? ($grossProfit / $revenue) * 100 : 0.0,
+            'net_margin' => $revenue > 0 ? ($netProfit / $revenue) * 100 : 0.0,
+            'aov' => $orders > 0 ? $revenue / $orders : 0.0,
         ];
     }
 

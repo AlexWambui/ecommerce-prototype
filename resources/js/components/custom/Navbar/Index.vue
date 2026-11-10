@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { Sun, Moon, Menu, X, User, LayoutDashboard, LogOut, ChevronDown } from '@lucide/vue';
+import { Sun, Moon, Menu, X, User, LayoutDashboard, LogOut, ChevronDown, ShoppingCart } from '@lucide/vue';
 import { onMounted, onBeforeUnmount } from 'vue';
 import { computed, ref } from 'vue';
 import { useAppConfig } from '@/composables/useAppConfig';
@@ -46,6 +46,12 @@ const onKey = (e: KeyboardEvent) => {
 };
 onMounted(() => window.addEventListener('keydown', onKey));
 onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
+
+const cartCount = computed(() => {
+    const cart = page.props.cart as { itemCount?: number } | undefined;
+    
+    return cart?.itemCount ?? 0;
+});
 </script>
 
 <template>
@@ -75,6 +81,22 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
                     <Sun v-if="appearance === 'light'" class="icon sun-icon w-5 h-5" />
                     <Moon v-else class="icon moon-icon w-5 h-5" />
                 </button>
+
+                <!-- Cart button: always visible, right after theme toggle -->
+                <Link
+                    href="/cart"
+                    class="relative p-2 rounded-md hover:bg-accent"
+                    title="View cart"
+                    aria-label="View cart"
+                >
+                    <ShoppingCart class="w-5 h-5" />
+                    <span
+                        v-if="cartCount > 0"
+                        class="absolute -top-0.5 -right-0.5 min-w-4.5 h-4.5 px-1 rounded-full bg-red-600 text-white text-[10px] font-semibold flex items-center justify-center leading-none"
+                    >
+                        {{ cartCount > 99 ? '99+' : cartCount }}
+                    </span>
+                </Link>
 
                 <!-- Logged-in user menu -->
                 <div v-if="user" ref="userMenuRef" class="relative">

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->uuid()->unique();
             $table->string('order_number')->unique();
-            $table->string('order_channel')->default('website');
+            $table->string('order_channel')->default('pos');
             $table->string('order_status')->default('pending')->comment('pending, confirmed, processing, ready_for_pickup, completed, cancelled, refunded'); // current status for quick access
 
             // Fiscals
@@ -55,12 +55,16 @@ return new class extends Migration
             $table->string('shipping_address_snapshot')->nullable();
 
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('sold_at');
             $table->timestamps();
 
             // Indexes for fast lookups
             $table->index(['sold_at']);
             $table->index(['customer_phone']);
+            $table->index(['created_by', 'created_at']);
+            $table->index(['created_by', 'sold_at']);
         });
     }
 

@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { useForm, Head } from '@inertiajs/vue3';
-import { computed, watch, ref } from 'vue';
+import { useForm, Head, router } from '@inertiajs/vue3';
+import { computed, watch, ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { Search } from '@lucide/vue';
+import axios from 'axios';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,96 +13,145 @@ import { usePriceFormatter } from '@/composables/usePriceFormatter';
 import orderRoutes from '@/routes/orders';
 import type { Product } from '@/types/product';
 
+interface RecentOrder {
+    id: number;
+    uuid: string;
+    order_number: string;
+    customer_name: string;
+    total_selling_price: number;
+    order_status: string;
+    order_status_label: string;
+    user?: { id: number; name: string } | null;
+    created_at: string;
+}
+
+interface CartItemPayload extends Product {
+    quantity: number;
+}
+
 const { formatPrice } = usePriceFormatter();
 
-defineProps<{
+const props = defineProps<{
     products: { data: Product[] };
-    orderStatuses: Record<string, string>;
-    deliveryStatuses: Record<string, string>;
+    recent_orders: { data: RecentOrder[] };
+    can_view_all: boolean;
 }>();
 
+const statusClasses: Record<string, string> = {
+    pending:         'bg-yellow-100 text-yellow-800',
+    confirmed:       'bg-blue-100 text-blue-800',
+    processing:      'bg-blue-100 text-blue-800',
+    ready_for_pickup:'bg-purple-100 text-purple-800',
+    completed:       'bg-green-100 text-green-800',
+    cancelled:       'bg-red-100 text-red-800',
+};
+
+const statusClass = (status: string) => statusClasses[status] ?? 'bg-gray-100 text-gray-800';
+
 // --- STATE ---
-const cart = ref<Product[]>([]);
-const deliveryMethod = ref<'shop' | 'delivery'>('shop');
-const selectedArea = ref('');
-const deliveryCost = ref(0);
+const cart = ref<CartItemPayload[]>([]);
 
 // --- INERTIA FORM ---
 const form = useForm({
-    customer_name: '',
+    user_id: null as number | null,
+    customer_name: 'Walk-in',
     customer_phone: '',
     customer_email: '',
     delivery_method: 'shop',
     order_channel: 'pos',
-    location: '',
-    area: '',
-    address: '',
+    location: 'shop',
+    area: 'shop',
+    address: 'shop',
     delivery_cost: 0,
     amount_paid: 0,
     payments: [{ amount: 0, method: 'mpesa' }],
-    cart_items: [] as Product[], 
+    cart_items: [] as CartItemPayload[], 
 });
 
 // --- COMPUTED TOTALS ---
-const subtotal = computed(() => {
-    return cart.value.reduce((sum, item) => sum + item.price, 0);
-});
+const subtotal = computed(() => cart.value.reduce((sum, item) => sum + (item.price * item.quantity), 0));
 
-const total = computed(() => {
-    return subtotal.value + deliveryCost.value;
-});
+const totalItemsCount = computed(() => cart.value.reduce((sum, item) => sum + item.quantity, 0));
 
-// --- WATCHERS ---
-// Update the form delivery_cost whenever deliveryCost changes
-watch(deliveryCost, (newVal) => {
-    form.delivery_cost = newVal;
-});
+const total = computed(() => subtotal.value);
 
-// Watch for Area changes (Mock DB fetch)
-watch(selectedArea, async (newArea) => {
-    if (!newArea) {
-        deliveryCost.value = 0;
+// --- CUSTOMER LOOKUP BY PHONE ---
+const lookupLoading = ref(false);
+const lookupError   = ref<string | null>(null);
+let lookupDebounce: number | undefined;
 
+const lookupCustomer = (phone: string) => {
+    window.clearTimeout(lookupDebounce);
+
+    if (!phone || phone.length < 7) {
+        // Reset to walk-in defaults
+        form.user_id = null;
+        form.customer_name = 'Walk-in';
+        form.customer_email = '';
+        lookupError.value = null;
         return;
     }
 
-    // In a real scenario, you'd fetch this from your backend
-    const mockCosts: Record<string, number> = {
-        'Kilimani': 250,
-        'Lavington': 300,
-        'Westlands': 350
-    };
-    deliveryCost.value = mockCosts[newArea] || 150;
-});
+    lookupDebounce = window.setTimeout(async () => {
+        lookupLoading.value = true;
+        lookupError.value = null;
+        try {
+            const { data } = await axios.get('/customers/lookup', {
+                params: { phone },
+            });
 
-// Watch deliveryMethod to clear delivery fields if switched to shop
-watch(deliveryMethod, (newMethod) => {
-    form.delivery_method = newMethod;
-    
-    if (newMethod === 'shop') {
-        form.location = '';
-        form.area = '';
-        form.address = '';
-        selectedArea.value = '';
-        deliveryCost.value = 0;
-    }
-});
+            if (data?.name) {
+                form.user_id = data.id;
+                form.customer_name  = data.name;
+                form.customer_email = data.email ?? '';
+            } else {
+                form.user_id = null;
+                form.customer_name  = 'Walk-in';
+                form.customer_email = '';
+                lookupError.value = 'No account found — will be saved as walk-in.';
+            }
+        } catch (e) {
+            form.customer_name  = 'Walk-in';
+            form.customer_email = '';
+            lookupError.value = 'Lookup failed — will be saved as walk-in.';
+        } finally {
+            lookupLoading.value = false;
+        }
+    }, 350);
+};
+// Watch the phone field and trigger lookup
+watch(() => form.customer_phone, (val) => lookupCustomer(val));
 
 // --- ACTIONS ---
 const addToCart = (product: Product) => {
     // Check if already in cart
-    const existing = cart.value.findIndex(item => item.id === product.id);
+    const existing = cart.value.find(item => item.id === product.id);
 
-    if (existing !== -1) {
-        // If you want to allow quantity increase, handle it here
-        return; 
+    if (existing) {
+        existing.quantity += 1;
+    } else {
+        cart.value.push({ ...product, quantity: 1 });
     }
-
-    cart.value.push(product);
 };
 
 const removeFromCart = (id: number) => {
     cart.value = cart.value.filter(item => item.id !== id);
+};
+
+const increaseQuantity = (id: number) => {
+    const item = cart.value.find(item => item.id === id);
+    if (item) item.quantity += 1;
+};
+
+const decreaseQuantity = (id: number) => {
+    const item = cart.value.find(item => item.id === id);
+    if (item) {
+        if (item.quantity > 1) {
+            item.quantity -= 1;
+        } else {
+            removeFromCart(id);
+        }
+    }
 };
 
 const payments = ref([
@@ -115,28 +166,13 @@ const removePaymentRow = (index: number) => {
     payments.value.splice(index, 1);
 }
 
-// const totalPaid = computed(() => {
-//     return payments.value.reduce((sum, p) => sum + Number(p.amount), 0);
-// });
-
-const isAnonymous = ref(false);
-
-watch(isAnonymous, (val) => {
-    if (val) {
-        form.customer_name = 'Guest';
-        form.customer_phone = 'na';
-        form.customer_email = 'guest@gmail.com';
-    } else {
-        form.customer_name = '';
-        form.customer_phone = '';
-        form.customer_email = '';
-    }
-});
-
 const submitOrder = () => {
     // Populate the cart_items in the form before submitting
-    form.cart_items = cart.value;
-
+    // Send cart items with quantity
+    form.cart_items = cart.value.map(item => ({
+        ...item,
+        quantity: item.quantity,
+    }));
     form.payments = payments.value;
 
     form.post(orderRoutes.store.url(), {
@@ -144,27 +180,129 @@ const submitOrder = () => {
         onSuccess: () => {
             // Reset state after success
             cart.value = [];
-            deliveryMethod.value = 'shop';
-            deliveryCost.value = 0;
-            selectedArea.value = '';
             payments.value = [{amount: 0, method: 'mpesa'}];
+            form.amount_paid = payments.value.reduce((s, p) => s + Number(p.amount || 0), 0);
             form.reset(); 
+            form.customer_name = 'Walk-in';
+            form.customer_phone = '';
+            form.customer_email = '';
+            form.user_id = null;
+
+            router.reload({only: ['recent_orders', 'products']})
         }
     });
 };
+
+let interval: number | undefined;
+
+onMounted(() => {
+    if (!props.can_view_all) return; // only admins poll
+    interval = window.setInterval(() => {
+        router.reload({ only: ['recent_orders'] });
+    }, 30_000); // every 30s
+});
+
+onUnmounted(() => clearInterval(interval));
+
+// --- PRODUCT SEARCH ---
+const searchQuery = ref('');
+
+const searchInput = ref<HTMLInputElement | null>(null);
+
+onMounted(() => {
+    // Existing code...
+    nextTick(() => searchInput.value?.focus());
+});
+
+const filteredProducts = computed(() => {
+    const query = searchQuery.value.trim().toLowerCase();
+    
+    if (!query) {
+        return props.products.data;
+    }
+
+    return props.products.data.filter((product) => {
+        const name = product.name?.toLowerCase() ?? '';
+        const barcode = product.barcode?.toLowerCase() ?? '';
+        const sku = (product as any).sku?.toLowerCase() ?? '';
+        const category = (product as any).category?.name?.toLowerCase() ?? '';
+        
+        return name.includes(query) 
+            || sku.includes(query) 
+            || barcode.includes(query)
+            || category.includes(query);
+    });
+});
+
+const handleKeydown = (e: KeyboardEvent) => {
+    // Don't hijack if already typing in an input
+    const target = e.target as HTMLElement;
+    const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) 
+        || target.isContentEditable;
+
+    if (e.key === '/' && !isTyping) {
+        e.preventDefault();
+        searchInput.value?.focus();
+    }
+};
+
+onMounted(() => {
+    window.addEventListener('keydown', handleKeydown);
+});
+
+onUnmounted(() => {
+    window.clearTimeout(lookupDebounce);
+    window.removeEventListener('keydown', handleKeydown);
+    clearInterval(interval);
+});
 </script>
 
 <template>
     <Head title="POS - New Order" />
 
-    <div class="pos-wrapper grid lg:grid-cols-2 gap-8 h-[84dvh] p-4 bg-background text-foreground overflow-hidden">
-        <div class="products-wrapper overflow-y-auto pr-4">
-            <h2 class="text-xl font-bold mb-4">Select Products</h2>
+    <div class="pos-wrapper grid lg:grid-cols-2 gap-8 p-4 bg-background text-foreground overflow-hidden">
+        <div class="products-wrapper overflow-y-auto pr-4 h-[75dvh] rounded-lg">
+            <div class="flex items-center justify-between mb-4 gap-3">
+                <h2 class="text-xl font-bold">Select Products</h2>
+                <span class="text-xs text-gray-500">
+                    {{ filteredProducts.length }} 
+                    {{ filteredProducts.length === 1 ? 'product' : 'products' }}
+                </span>
+            </div>
+
+            <!-- Search Input -->
+            <div class="relative mb-4">
+                <Input
+                    v-model="searchQuery"
+                    type="text"
+                    placeholder="Search by name, SKU, or category... (press / to focus)"
+                    class="pl-9"
+                    @keydown.esc="searchQuery = ''"
+                />
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                    <Search class="w-4 h-4" />
+                </span>
+                <button
+                    v-if="searchQuery"
+                    type="button"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm"
+                    @click="searchQuery = ''"
+                    aria-label="Clear search"
+                >
+                    ✕
+                </button>
+            </div>
+
             <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                <div v-for="product in products.data" :key="product.id" class="bg-background text-foreground p-3 rounded-lg shadow-sm border hover:shadow-md transition">
+                <div 
+                    v-for="product in filteredProducts" 
+                    :key="product.id" 
+                    class="bg-background text-foreground p-3 rounded-lg shadow-sm border hover:shadow-md transition"
+                >
                     <div class="w-full h-32 overflow-hidden rounded mb-2 bg-gray-100">
-                        <img :src="product.thumbnail_url" :alt="product.name" class="w-full h-full object-cover" />
+                        <img :src="product.thumbnail_url" :alt="product.name" class="w-full h-full object-contain" />
                     </div>
+
                     <div class="space-y-1">
                         <p class="font-semibold text-sm truncate">{{ product.name }}</p>
                         <p class="text-blue-600 font-bold text-sm">{{ formatPrice(product.price) }}</p>
@@ -174,138 +312,130 @@ const submitOrder = () => {
                             class="w-full bg-blue-800 hover:bg-blue-900 text-white"
                             @click="addToCart(product)"
                         >
-                            Add to Cart
+                            {{ cart.find(i => i.id === product.id) ? 'Add Another' : 'Add to Cart' }}
+                            <span 
+                                v-if="cart.find(i => i.id === product.id)?.quantity"
+                                class="text-white text-xs"
+                            >
+                                ( {{ cart.find(i => i.id === product.id)!.quantity }} )
+                            </span>
                         </Button>
                     </div>
                 </div>
 
-                <div v-if="!products.data || products.data.length === 0" class="col-span-full text-center py-12">
+                <!-- Empty state: no products at all -->
+                <div 
+                    v-if="!products.data || products.data.length === 0" 
+                    class="col-span-full text-center py-12"
+                >
                     <div class="text-gray-400 text-6xl mb-4">📦</div>
                     <h3 class="text-xl font-semibold text-gray-600 mb-2">No products available!</h3>
-                    <p class="text-gray-400">There's not stocked products!</p>
+                    <p class="text-gray-400">There are no stocked products!</p>
+                </div>
+
+                <!-- Empty state: search returned nothing -->
+                <div 
+                    v-else-if="filteredProducts.length === 0" 
+                    class="col-span-full text-center py-12"
+                >
+                    <div class="text-gray-400 text-6xl mb-4">🔍</div>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">No matches found</h3>
+                    <p class="text-gray-400 mb-4">
+                        No products match "<span class="font-medium">{{ searchQuery }}</span>"
+                    </p>
+                    <Button type="button" variant="outline" size="sm" @click="searchQuery = ''">
+                        Clear search
+                    </Button>
                 </div>
             </div>
         </div>
 
         <div class="cart-wrapper bg-background text-foreground p-6 rounded-lg shadow-lg h-full overflow-y-auto flex flex-col">
-            <h2 class="text-xl font-bold mb-4 border-b pb-2">Current Order</h2>
+            <h2 class="text-xl font-bold mb-4 border-b pb-2 flex items-center justify-between">
+                <span>Current Order</span>
+                <span 
+                    v-if="totalItemsCount > 0" 
+                    class="text-sm bg-blue-600 text-white rounded-full px-2 py-0.5"
+                >
+                    {{ totalItemsCount }} {{ totalItemsCount === 1 ? 'item' : 'items' }}
+                </span>
+            </h2>
             
             <!-- Cart Items List -->
             <div class="cart-items space-y-2 min-h-25 max-h-50 overflow-y-auto mb-4 flex-1" v-if="cart.length > 0">
-                <div v-for="item in cart" :key="item.id" class="flex justify-between items-center text-sm bg-background text-foreground p-2 rounded border">
-                    <div class="flex-1">
-                        <span class="font-medium">{{ item.name }}</span>
-                        <span class="text-gray-500 ml-2">x1</span>
+                <div v-for="item in cart" :key="item.id" class="grid gap-2 lg:grid-cols-2 text-sm bg-background text-foreground p-2 rounded border">
+                    <div class="">
+                        <span class="font-medium truncate block">{{ item.name }}</span>
+                        <span class="text-gray-500 text-xs">{{ formatPrice(item.price) }} each</span>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <span class="font-bold">{{ formatPrice(item.price) }}</span>
-                        <Button 
-                            type="button" 
-                            variant="destructive" 
-                            size="icon" 
-                            class="h-6 w-6 rounded-full text-xs"
-                            @click="removeFromCart(item.id)"
-                        >
-                            ✕
-                        </Button>
+
+                    <div class="quality_price flex gap-2 justify-between">
+                        <!-- Quantity Controls -->
+                        <div class="flex items-center gap-2">
+                            <Button 
+                                type="button" 
+                                variant="outline" 
+                                size="icon" 
+                                class="h-6 w-6 rounded-full text-xs"
+                                @click="decreaseQuantity(item.id)"
+                            >
+                                −
+                            </Button>
+                            <span class="w-6 text-center font-semibold">{{ item.quantity }}</span>
+                            <Button 
+                                type="button" 
+                                variant="outline" 
+                                size="icon" 
+                                class="h-6 w-6 rounded-full text-xs"
+                                @click="increaseQuantity(item.id)"
+                            >
+                                +
+                            </Button>
+                        </div>
+
+                        <div class="flex items-center gap-3 ml-3">
+                            <span class="font-bold w-20 text-right">{{ formatPrice(item.price * item.quantity) }}</span>
+                            <Button 
+                                type="button" 
+                                variant="destructive" 
+                                size="icon" 
+                                class="h-6 w-6 rounded-full text-xs"
+                                @click="removeFromCart(item.id)"
+                            >
+                                ✕
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>
+
             <div v-else class="text-gray-400 text-center py-6 flex-1">No items in cart</div>
 
             <!-- Order Form -->
             <form @submit.prevent="submitOrder" class="space-y-4 border-t pt-4">
-
-                <div class="grid grid-cols-2 gap-3 items-start">
-                    <div>
-                        <Label for="order_channel" class="text-xs">Order Channel</Label>
-                        <Select v-model="form.order_channel">
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select Channel" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    <SelectItem value="pos">POS</SelectItem>
-                                    <SelectItem value="walk_in">Walk In</SelectItem>
-                                    <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                                    <SelectItem value="tiktok">TikTok</SelectItem>
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-                        <InputError :message="form.errors.order_channel" />
-                    </div>
-
-                    <div class="flex items-center gap-2 mb-2">
-                        <input type="checkbox" id="isAnonymous" v-model="isAnonymous" class="w-4 h-4 rounded" />
-                        <Label for="isAnonymous" class="text-sm cursor-pointer">Walk-in Customer (Skip Details)</Label>
-                    </div>
-                </div>
-                
-                <!-- Customer Info -->
+                <!-- Customer Phone (lookup) -->
                 <div class="space-y-3">
-                    <h3 class="font-semibold text-sm text-gray-700">Customer Information</h3>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="col-span-2 sm:col-span-1">
-                            <Label for="customer_name" class="text-xs">Name</Label>
-                            <Input id="customer_name" v-model="form.customer_name" required />
-                            <InputError :message="form.errors.customer_name" />
-                        </div>
-                        <div class="col-span-2 sm:col-span-1">
-                            <Label for="customer_phone" class="text-xs">Phone</Label>
-                            <Input id="customer_phone" v-model="form.customer_phone" required />
-                            <InputError :message="form.errors.customer_phone" />
-                        </div>
-                        <div class="col-span-2">
-                            <Label for="customer_email" class="text-xs">Email (Optional)</Label>
-                            <Input id="customer_email" v-model="form.customer_email" type="email" />
-                            <InputError :message="form.errors.customer_email" />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Delivery Method -->
-                <div class="space-y-2">
-                    <h3 class="font-semibold text-sm text-gray-700">Delivery Method</h3>
-                    <div class="flex gap-4">
-                        <Label class="flex items-center gap-2 text-sm cursor-pointer">
-                            <input type="radio" value="shop" v-model="deliveryMethod" /> Shop Pickup
-                        </Label>
-                        <Label class="flex items-center gap-2 text-sm cursor-pointer">
-                            <input type="radio" value="delivery" v-model="deliveryMethod" /> Delivery
-                        </Label>
-                    </div>
-                    <InputError :message="form.errors.delivery_method" />
-                </div>
-
-                <!-- Delivery Details (Conditional) -->
-                <div v-if="deliveryMethod === 'delivery'" class="bg-gray-50 p-3 rounded border space-y-3">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <Label for="location" class="text-xs">Location</Label>
-                            <Input id="location" v-model="form.location" />
-                            <InputError :message="form.errors.location" />
-                        </div>
-                        <div>
-                            <Label for="area" class="text-xs">Area (Fetches Cost)</Label>
-                            <Select v-model="selectedArea">
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select Area" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectItem value="Kilimani">Kilimani</SelectItem>
-                                        <SelectItem value="Lavington">Lavington</SelectItem>
-                                        <SelectItem value="Westlands">Westlands</SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                            <InputError :message="form.errors.area" />
-                        </div>
-                    </div>
+                    <h3 class="font-semibold text-sm text-gray-700">Customer</h3>
                     <div>
-                        <Label for="address" class="text-xs">Address</Label>
-                        <Input id="address" v-model="form.address" />
-                        <InputError :message="form.errors.address" />
+                        <Label for="customer_phone" class="text-xs">Phone Number</Label>
+                        <div class="relative">
+                            <Input
+                                id="customer_phone"
+                                v-model="form.customer_phone"
+                                placeholder="e.g. 0712345678 (leave blank for walk-in)"
+                            />
+                            <Spinner
+                                v-if="lookupLoading"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4"
+                            />
+                        </div>
+                        <p v-if="lookupError" class="text-[11px] text-amber-600 mt-1">
+                            {{ lookupError }}
+                        </p>
+                        <p v-else-if="form.user_id" class="text-[11px] text-green-600 mt-1">
+                            Matched customer: {{ form.customer_name }}
+                        </p>
+                        <InputError :message="form.errors.customer_phone" />
                     </div>
                 </div>
 
@@ -313,12 +443,12 @@ const submitOrder = () => {
                 <div class="space-y-2 mt-2">
                     <h3 class="font-semibold text-sm text-gray-700">Payments</h3>
                     <div v-for="(payment, index) in payments" :key="index" class="flex gap-2">
-                        <Input 
-                            v-model="payment.amount" 
-                            type="number" 
-                            step="0.01" 
-                            placeholder="Amount" 
-                            class="w-1/2" 
+                        <Input
+                            v-model="payment.amount"
+                            type="number"
+                            step="0.01"
+                            placeholder="Amount"
+                            class="w-1/2"
                         />
                         <Select v-model="payment.method">
                             <SelectTrigger class="w-1/2">
@@ -331,7 +461,14 @@ const submitOrder = () => {
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
-                        <Button type="button" variant="destructive" size="icon" class="h-9 w-9" @click="removePaymentRow(index)" v-if="payments.length > 1">
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            class="h-9 w-9"
+                            @click="removePaymentRow(index)"
+                            v-if="payments.length > 1"
+                        >
                             ✕
                         </Button>
                     </div>
@@ -340,28 +477,87 @@ const submitOrder = () => {
                     </Button>
                 </div>
 
-                <!-- Summary & Payment -->
+                <!-- Summary -->
                 <div class="bg-background text-foreground p-3 rounded space-y-1">
-                    <div class="flex justify-between text-sm"><span>Subtotal</span><span>{{ formatPrice(subtotal) }}</span></div>
-                    <div class="flex justify-between text-sm"><span>Delivery</span><span>{{ formatPrice(deliveryCost) }}</span></div>
-                    <div class="flex justify-between font-bold text-base border-t pt-1 mt-1"><span>Total</span><span>{{ formatPrice(total) }}</span></div>
-
-                    <!-- Show what statuses will be applied -->
+                    <div class="flex justify-between text-sm">
+                        <span>Subtotal</span><span>{{ formatPrice(subtotal) }}</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-base border-t pt-1 mt-1">
+                        <span>Total</span><span>{{ formatPrice(total) }}</span>
+                    </div>
                     <div class="mt-2 pt-2 border-t text-xs text-gray-500">
-                        <p>Order will be: <span class="font-medium">{{ deliveryMethod === 'shop' ? 'Ready for Pickup' : 'Pending' }}</span></p>
-                        <p>Delivery: <span class="font-medium">Pending</span></p>
+                        <p>Order: <span class="font-medium">Ready for Pickup</span></p>
+                        <p>Delivery: <span class="font-medium">Picked Up</span></p>
                     </div>
                 </div>
 
-                <Button 
-                    type="submit" 
+                <Button
+                    type="submit"
                     class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 mt-2"
-                    :disabled="form.processing || cart.length === 0"
+                    :disabled="form.processing || cart.length === 0 || lookupLoading"
                 >
                     <Spinner v-if="form.processing" class="mr-2" />
                     Confirm Order
                 </Button>
             </form>
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="recent-orders border-t pt-4 mt-4">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-sm text-gray-700">
+                {{ can_view_all ? 'Recent Orders (All Users)' : 'Your Recent Orders' }}
+            </h3>
+
+            <a
+                v-if="can_view_all"
+                :href="orderRoutes.index().url"
+                class="text-xs text-blue-600 hover:underline"
+            >
+                View all →
+            </a>
+        </div>
+
+        <div v-if="recent_orders.data.length === 0" class="text-xs text-gray-400 py-4 text-center">
+            No recent orders
+        </div>
+
+        <div v-else class="space-y-2 max-h-64 overflow-y-auto pr-1">
+            <a
+                v-for="order in recent_orders.data"
+                :key="order.id"
+                :href="orderRoutes.edit(order.uuid).url"
+                class="flex items-center justify-between p-2 rounded border text-xs hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+            >
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                        <span class="font-mono text-[10px] text-gray-500">
+                            {{ order.order_number }}
+                        </span>
+                        <span
+                            class="rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                            :class="statusClass(order.order_status)"
+                        >
+                            {{ order.order_status_label }}
+                        </span>
+                    </div>
+                    <div class="text-gray-700 dark:text-gray-300 truncate">
+                        {{ order.customer_name }}
+                    </div>
+                    <div v-if="can_view_all && order.user" class="text-[10px] text-gray-400">
+                        by {{ order.user.name }}
+                    </div>
+                </div>
+                <div class="text-right ml-3">
+                    <div class="font-bold text-gray-900 dark:text-gray-100">
+                        {{ formatPrice(order.total_selling_price) }}
+                    </div>
+                    <div class="text-[10px] text-gray-400">
+                        {{ order.created_at }}
+                    </div>
+                </div>
+            </a>
         </div>
     </div>
 </template>

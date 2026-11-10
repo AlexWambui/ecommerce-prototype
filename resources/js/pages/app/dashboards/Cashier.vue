@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Head, usePage, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import DashboardStat from './components/DashboardStat.vue';
 import { usePriceFormatter } from '@/composables/usePriceFormatter';
+import DashboardStat from './components/DashboardStat.vue';
 // import orderRoutes from '@/routes/orders';
 
 const page = usePage();

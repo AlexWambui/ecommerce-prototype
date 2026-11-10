@@ -2,7 +2,7 @@
 
 namespace Modules\Order\Models;
 
-use App\Concerns\HasUuid;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,11 +11,14 @@ use InvalidArgumentException;
 use Modules\Order\Enums\DeliveryStatusEnum;
 use Modules\Order\Enums\OrderStatusEnum;
 use Modules\Payment\Models\Payment;
+use Modules\Support\Concerns\HasCreatorAuditTrail;
+use Modules\Support\Concerns\HasUuid;
+use Modules\User\Enums\UserRoles;
 use Modules\User\Models\User;
 
 class Order extends Model
 {
-    use HasUuid;
+    use HasCreatorAuditTrail, HasUuid;
 
     protected $guarded = [];
 
@@ -31,9 +34,35 @@ class Order extends Model
         'delivery_status' => DeliveryStatusEnum::class,
     ];
 
+    public static function generateOrderNumber(): string
+    {
+        $prefix = 'Ord_'.now()->format('ymd').'_';
+
+        $lastToday = static::query()
+            ->where('order_number', 'like', $prefix.'%')
+            ->orderByDesc('id')
+            ->value('order_number');
+
+        $next = $lastToday
+            ? ((int) substr($lastToday, strlen($prefix))) + 1
+            : 1;
+
+        return $prefix.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+    }
+
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updatedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 
     public function orderItems(): HasMany
@@ -330,7 +359,7 @@ class Order extends Model
 
     public function getFullNameAttribute(): string
     {
-        return $this->customer_name ?? 'Guest';
+        return $this->customer_name ?? 'Walk-in';
     }
 
     public function isShopPickup(): bool
@@ -350,7 +379,10 @@ class Order extends Model
 
     public function scopeCompleted($query)
     {
-        return $query->where('order_status', OrderStatusEnum::COMPLETED->value);
+        return $query->where(function ($q) {
+            $q->where('order_status', OrderStatusEnum::COMPLETED->value)
+                ->orWhere('delivery_status', DeliveryStatusEnum::PICKED_UP->value);
+        });
     }
 
     public function scopeForUser($query, int $userId)
@@ -365,7 +397,7 @@ class Order extends Model
 
     public function scopePaid($query)
     {
-        return $query->whereColumn('amount_paid', '>=', 'total_selling_price');
+        return $query->whereColumn('amount_paid', '>=', 'total_selling_price')->where('total_selling_price', '>', 0);
     }
 
     public function scopePending($query)
@@ -420,23 +452,54 @@ class Order extends Model
             ->where('amount_paid', '>', 0);
     }
 
-    public function scopeSearch($query, $search)
+    public function scopeSearch(Builder $query, ?string $search): Builder
     {
-        if (empty($search)) {
+        if (blank($search)) {
             return $query;
         }
 
-        $search_term = '%'.strtolower($search).'%';
+        $term = '%'.strtolower(trim($search)).'%';
 
-        return $query->where(function ($q) use ($search_term) {
-            $q->whereRaw('LOWER(order_number) LIKE ?', [$search_term])
-                ->orWhereRaw('LOWER(customer_name) LIKE ?', [$search_term])
-                ->orWhereRaw('LOWER(customer_phone) LIKE ?', [$search_term])
-                ->orWhereRaw('LOWER(order_status) LIKE ?', [$search_term])
-                ->orWhereHas('user', function ($user_query) use ($search_term) {
-                    $user_query->whereRaw('LOWER(name) LIKE ?', [$search_term])
-                        ->orWhereRaw('LOWER(email) LIKE ?', [$search_term]);
+        return $query->where(function ($q) use ($term) {
+            // Direct columns
+            $q->whereRaw('LOWER(order_number) LIKE ?', [$term])
+                ->orWhereRaw('LOWER(order_channel) LIKE ?', [$term])
+                ->orWhereRaw('LOWER(customer_name) LIKE ?', [$term])
+                ->orWhereRaw('LOWER(customer_phone) LIKE ?', [$term])
+                ->orWhereRaw('LOWER(order_status) LIKE ?', [$term])
+
+            // Cashier (created_by) name / email
+                ->orWhereHas('createdBy', function ($sub) use ($term) {
+                    $sub->whereRaw('LOWER(name) LIKE ?', [$term])
+                        ->orWhereRaw('LOWER(email) LIKE ?', [$term]);
+                })
+
+            // Updater (updated_by) name / email
+                ->orWhereHas('updatedBy', function ($sub) use ($term) {
+                    $sub->whereRaw('LOWER(name) LIKE ?', [$term])
+                        ->orWhereRaw('LOWER(email) LIKE ?', [$term]);
+                })
+
+            // Customer user (user_id) — keep if you still want it
+                ->orWhereHas('user', function ($sub) use ($term) {
+                    $sub->whereRaw('LOWER(name) LIKE ?', [$term])
+                        ->orWhereRaw('LOWER(email) LIKE ?', [$term]);
                 });
         });
+    }
+
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        if (in_array($user->role, [UserRoles::SUPER_ADMIN, UserRoles::ADMIN], true)) {
+            return $query;
+        }
+
+        // Everyone else (cashiers) sees only what they created
+        return $query->where('created_by', $user->id);
+    }
+
+    public function scopeRecent(Builder $query): Builder
+    {
+        return $query->latest('created_at');
     }
 }

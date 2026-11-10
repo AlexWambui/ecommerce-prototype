@@ -82,12 +82,12 @@ class User extends Authenticatable
 
     public function getRoleLabelAttribute(): string
     {
-        return $this->role->label();
+        return $this->role?->label() ?? 'Unknown';
     }
 
     public function getStatusLabelAttribute(): string
     {
-        return $this->status->label();
+        return $this->status?->label() ?? 'Unknown';
     }
 
     public function getImageUrlAttribute(): ?string

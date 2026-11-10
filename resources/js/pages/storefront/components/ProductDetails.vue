@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { router, Link } from '@inertiajs/vue3';
 import { usePriceFormatter } from '@/composables/usePriceFormatter';
 import AddToCartButton from '@/pages/storefront/components/AddToCartButton.vue';
 import productDetailsRoute from '@/routes/product-details';
@@ -7,13 +7,21 @@ import type {Product} from '@/types/product';
 
 const {formatPrice} = usePriceFormatter();
 
-const props = defineProps<{
+defineProps<{
     product: Product;
 }>();
 
-const onAddToCart = () => {
-    // TODO: call your cart store / POST endpoint
-    console.log('add to cart', props.product.slug);
+const onAddToCart = (payload: { slug: string; name?: string; price?: number }) => {
+    router.post('/cart/add', { slug: payload.slug }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            // Optional: show a toast notification
+            console.log('Added to cart successfully');
+        },
+        onError: (errors) => {
+            console.error('Failed to add to cart', errors);
+        },
+    });
 };
 </script>
 

@@ -2,12 +2,11 @@
 
 namespace Modules\Storefront\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 // use Modules\Product\Models\ProductBrand;
-use Modules\Product\Models\Product;
-// use Modules\Product\Http\Resources\BrandResource;
 use Modules\Product\Http\Resources\ProductHomePageResource;
+// use Modules\Product\Http\Resources\BrandResource;
+use Modules\Product\Models\Product;
 
 class HomePageController extends Controller
 {
@@ -20,13 +19,13 @@ class HomePageController extends Controller
             ->with('images')
             ->limit(8)
             ->get();
-        
+
         $most_popular = $this->getMostPopularProducts();
 
         return inertia('storefront/home/Index', [
             // 'brands' => BrandResource::collection($brands),
             'new_arrivals' => ProductHomePageResource::collection($new_arrivals)->resolve(),
-            'most_popular' => ProductHomePageResource::collection($most_popular)->resolve()
+            'most_popular' => ProductHomePageResource::collection($most_popular)->resolve(),
         ]);
     }
 
@@ -46,7 +45,7 @@ class HomePageController extends Controller
 
         // If we have less than 4 featured, get the remaining from random products
         $needed = 12 - $featured->count();
-        
+
         $random = Product::query()
             ->sellable()
             ->where('is_active', true)
